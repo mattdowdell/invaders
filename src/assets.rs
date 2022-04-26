@@ -7,39 +7,122 @@ use crate::points;
 
 ///
 #[derive(Copy, Clone, Debug, PartialEq)]
-pub struct Shooter {
-    origin: (f64, f64),
+pub struct Shot {
+    origin_x: f64,
+    origin_y: f64,
     color: Color,
 }
 
-impl Shooter {
+impl Shot {
     ///
-    pub fn new(origin_x: i16, origin_y: i16) -> Self {
+    pub fn new(shooter_origin_x: f64) -> Self {
         Self {
-            origin: (origin_x as f64, origin_y as f64),
+            origin_x: shooter_origin_x + points::SHOT_INITIAL_X_OFFSET,
+            origin_y: points::SHOT_INITIAL_Y,
             color: Color::Green,
         }
     }
 
+    ///
+    pub fn move_up(&mut self) {
+        self.origin_y += 2.0
+    }
+
+    ///
+    pub fn is_visible(&self) -> bool {
+        self.origin_y < (points::GAME_HEIGHT + 1.0)
+    }
+
     //
     fn data(&self) -> &'static [(f64, f64)] {
-        &points::SHOOTER
+        &points::SHOT
     }
 }
 
-impl Shape for Shooter {
+impl Shape for Shot {
     fn draw(&self, painter: &mut Painter) {
-        let (origin_x, origin_y) = self.origin;
-
         for (x, y) in self.data() {
-            let x = x + origin_x;
-            let y = y + origin_y;
+            let x = x + self.origin_x;
+            let y = y + self.origin_y;
 
             if let Some((x, y)) = painter.get_point(x, y) {
                 painter.paint(x, y, self.color);
             }
         }
     }
+}
+
+///
+#[derive(Copy, Clone, Debug, PartialEq)]
+pub struct Shooter {
+    pub origin_x: f64,
+    origin_y: f64,
+    form: ShooterForm,
+    color: Color,
+}
+
+impl Shooter {
+    ///
+    pub fn new_normal() -> Self {
+        Self {
+            origin_x: points::SHOOTER_INITIAL_X,
+            origin_y: points::SHOOTER_INITIAL_Y,
+            form: ShooterForm::Normal,
+            color: Color::Green,
+        }
+    }
+
+    ///
+    pub fn new_small(x_offset: f64) -> Self {
+        Self {
+            origin_x: points::SHOOTER_INITIAL_X + x_offset,
+            origin_y: points::SHOOTER_INITIAL_Y,
+            form: ShooterForm::Small,
+            color: Color::Green,
+        }
+    }
+
+    ///
+    pub fn move_left(&mut self) {
+        if self.origin_x > 1.0 {
+            self.origin_x -= 2.0;
+        }
+    }
+
+    ///
+    pub fn move_right(&mut self) {
+        if self.origin_x < (points::GAME_WIDTH - points::SHOOTER_WIDTH) {
+            self.origin_x += 2.0;
+        }
+    }
+
+    //
+    fn data(&self) -> &'static [(f64, f64)] {
+        match self.form {
+            ShooterForm::Normal => &points::SHOOTER,
+            ShooterForm::Small => &points::SHOOTER_SMALL,
+        }
+    }
+}
+
+impl Shape for Shooter {
+    fn draw(&self, painter: &mut Painter) {
+        for (x, y) in self.data() {
+            let x = x + self.origin_x;
+            let y = y + self.origin_y;
+
+            if let Some((x, y)) = painter.get_point(x, y) {
+                painter.paint(x, y, self.color);
+            }
+        }
+    }
+}
+
+///
+#[derive(Copy, Clone, Debug, PartialEq)]
+pub enum ShooterForm {
+    Normal,
+    Small,
 }
 
 ///
@@ -51,7 +134,7 @@ pub struct Shield {
 
 impl Shield {
     ///
-    pub fn new(origin_x: i16, origin_y: i16) -> Self {
+    pub fn new(origin_x: usize, origin_y: usize) -> Self {
         Self {
             origin: (origin_x as f64, origin_y as f64),
             color: Color::Green,
@@ -82,16 +165,33 @@ impl Shape for Shield {
 ///
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub struct Mothership {
-    origin: (f64, f64),
+    origin_x: f64,
+    origin_y: f64,
     color: Color,
 }
 
 impl Mothership {
     ///
-    pub fn new(origin_x: i16, origin_y: i16) -> Self {
+    pub fn new() -> Self {
         Self {
-            origin: (origin_x as f64, origin_y as f64),
+            origin_x: points::MOTHERSHIP_INITIAL_X,
+            origin_y: points::MOTHERSHIP_INITIAL_Y,
             color: Color::Red,
+        }
+    }
+
+    pub fn reset(&mut self) {
+        self.origin_x = points::MOTHERSHIP_INITIAL_X;
+    }
+
+    pub fn is_visible(&self) -> bool {
+        self.origin_x > (0.0 - points::MOTHERSHIP_WIDTH)
+    }
+
+    ///
+    pub fn move_left(&mut self) {
+        if self.is_visible() {
+            self.origin_x -= 2.0
         }
     }
 
@@ -103,11 +203,9 @@ impl Mothership {
 
 impl Shape for Mothership {
     fn draw(&self, painter: &mut Painter) {
-        let (origin_x, origin_y) = self.origin;
-
         for (x, y) in self.data() {
-            let x = x + origin_x;
-            let y = y + origin_y;
+            let x = x + self.origin_x;
+            let y = y + self.origin_y;
 
             if let Some((x, y)) = painter.get_point(x, y) {
                 painter.paint(x, y, self.color);
@@ -117,13 +215,14 @@ impl Shape for Mothership {
 }
 
 ///
+#[derive(Clone, Debug, PartialEq)]
 pub struct Grid {
     rows: Vec<Row>,
 }
 
 impl Grid {
     ///
-    pub fn new(origin_x: usize, origin_y: usize) -> Self {
+    pub fn new() -> Self {
         let mut rows = Vec::new();
         let monsters = vec![
             Monster::Crab,
@@ -134,7 +233,11 @@ impl Grid {
         ];
 
         for (i, monster) in monsters.into_iter().enumerate() {
-            let row = Row::new(monster, origin_x, origin_y + 10 * i);
+            let row = Row::new(
+                monster,
+                points::GRID_INITIAL_X,
+                points::GRID_INITIAL_Y + (points::ROW_HEIGHT * (i as f64)),
+            );
             rows.push(row);
         }
 
@@ -158,11 +261,15 @@ pub struct Row {
 
 impl Row {
     ///
-    pub fn new(monster: Monster, origin_x: usize, origin_y: usize) -> Self {
+    pub fn new(monster: Monster, origin_x: f64, origin_y: f64) -> Self {
         let mut aliens = Vec::new();
 
         for i in 0..8 {
-            let alien = Alien::new(monster, origin_x + 16 * i, origin_y);
+            let alien = Alien::new(
+                monster,
+                origin_x + (points::ALIEN_WIDTH + points::ALIEN_BUFFER_WIDTH) * (i as f64),
+                origin_y,
+            );
             aliens.push(Some(alien));
         }
 
@@ -185,17 +292,17 @@ impl Shape for Row {
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Alien {
     monster: Monster,
-    form: Form,
+    form: AlienForm,
     origin: (f64, f64),
 }
 
 impl Alien {
     ///
-    pub fn new(monster: Monster, origin_x: usize, origin_y: usize) -> Self {
+    pub fn new(monster: Monster, origin_x: f64, origin_y: f64) -> Self {
         Self {
             monster,
-            form: Form::default(),
-            origin: (origin_x as f64, origin_y as f64),
+            form: AlienForm::default(),
+            origin: (origin_x, origin_y),
         }
     }
 
@@ -203,16 +310,16 @@ impl Alien {
     pub fn data(&self) -> &'static [(f64, f64)] {
         match self.monster {
             Monster::Crab => match self.form {
-                Form::Original => &points::CRAB,
-                Form::Alternate => &points::CRAB_ALT,
+                AlienForm::Original => &points::CRAB,
+                AlienForm::Alternate => &points::CRAB_ALT,
             },
             Monster::Squid => match self.form {
-                Form::Original => &points::SQUID,
-                Form::Alternate => &points::SQUID_ALT,
+                AlienForm::Original => &points::SQUID,
+                AlienForm::Alternate => &points::SQUID_ALT,
             },
             Monster::Octopus => match self.form {
-                Form::Original => &points::OCTOPUS,
-                Form::Alternate => &points::OCTOPUS_ALT,
+                AlienForm::Original => &points::OCTOPUS,
+                AlienForm::Alternate => &points::OCTOPUS_ALT,
             },
         }
     }
@@ -220,9 +327,9 @@ impl Alien {
     ///
     pub fn width(&self) -> f64 {
         match self.monster {
-            Monster::Crab => 11.0,
-            Monster::Squid => 8.0,
-            Monster::Octopus => 12.0,
+            Monster::Crab => points::CRAB_WIDTH,
+            Monster::Squid => points::SQUID_WIDTH,
+            Monster::Octopus => points::OCTOPUS_WIDTH,
         }
     }
 }
@@ -230,7 +337,7 @@ impl Alien {
 impl Shape for Alien {
     fn draw(&self, painter: &mut Painter) {
         let (origin_x, origin_y) = self.origin;
-        let x_offset = (12.0 - self.width() / 2.0).floor();
+        let x_offset = ((points::ALIEN_WIDTH - self.width()) / 2.0).floor();
         let color = self.monster.color();
 
         for (x, y) in self.data() {
@@ -264,13 +371,13 @@ impl Monster {
 
 ///
 #[derive(Clone, Copy, Debug, PartialEq)]
-pub enum Form {
+pub enum AlienForm {
     Original,
     Alternate,
 }
 
 ///
-impl Form {
+impl AlienForm {
     pub fn switch(&self) -> Self {
         match self {
             Self::Original => Self::Alternate,
@@ -280,7 +387,7 @@ impl Form {
 }
 
 ///
-impl Default for Form {
+impl Default for AlienForm {
     fn default() -> Self {
         Self::Original
     }

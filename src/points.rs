@@ -1,5 +1,43 @@
 //!
 
+pub const GAME_WIDTH: f64 = 200.0;
+pub const GAME_HEIGHT: f64 = 132.0;
+
+pub const SHOOTER_WIDTH: f64 = 15.0;
+pub const SHOOTER_SMALL_WIDTH: f64 = 8.0;
+pub const SHIELD_WIDTH: f64 = 20.0;
+pub const CRAB_WIDTH: f64 = 11.0;
+pub const SQUID_WIDTH: f64 = 8.0;
+pub const OCTOPUS_WIDTH: f64 = 12.0;
+pub const ALIEN_WIDTH: f64 = OCTOPUS_WIDTH;
+pub const ALIEN_BUFFER_WIDTH: f64 = 4.0;
+pub const MOTHERSHIP_WIDTH: f64 = 16.0;
+
+pub const SHOOTER_HEIGHT: f64 = 7.0;
+pub const MOTHERSHIP_HEIGHT: f64 = 8.0;
+pub const ALIEN_HEIGHT: f64 = 8.0;
+pub const ALIEN_BUFFER_HEIGHT: f64 = 2.0;
+pub const ROW_HEIGHT: f64 = ALIEN_HEIGHT + ALIEN_BUFFER_HEIGHT;
+pub const MOTHERSHIP_GRID_BUFFER: f64 = 2.0;
+
+pub const SHOOTER_INITIAL_X: f64 = 1.0;
+pub const SHOOTER_INITIAL_Y: f64 = 0.0;
+
+pub const MOTHERSHIP_INITIAL_X: f64 = GAME_WIDTH + 1.0;
+pub const MOTHERSHIP_INITIAL_Y: f64 = GAME_HEIGHT - MOTHERSHIP_HEIGHT;
+
+pub const SHOT_INITIAL_Y: f64 = SHOOTER_HEIGHT + 1.0;
+pub const SHOT_INITIAL_X_OFFSET: f64 = (SHOOTER_WIDTH / 2.0) - 1.0;
+
+pub const GRID_INITIAL_X: f64 = 1.0;
+pub const GRID_INITIAL_Y: f64 = MOTHERSHIP_INITIAL_Y - (5.0 * ROW_HEIGHT) - MOTHERSHIP_GRID_BUFFER;
+
+/// ⡄
+pub static SHOT: [(f64, f64); 2] = [
+    (0.0, 0.0),
+    (0.0, 1.0),
+];
+
 /// ⢀⣀⣀⣾⣆⣀⣀
 /// ⣿⣿⣿⣿⣿⣿⣿⡇
 pub static SHOOTER: [(f64, f64); 80] = [
@@ -83,6 +121,28 @@ pub static SHOOTER: [(f64, f64); 80] = [
     (7.0, 6.0),
     (8.0, 6.0),
     (7.0, 7.0),
+];
+
+/// ⣠⣤⣧⣤⡀
+pub static SHOOTER_SMALL: [(f64, f64); 18] = [
+    (0.0, 0.0),
+    (1.0, 0.0),
+    (2.0, 0.0),
+    (3.0, 0.0),
+    (4.0, 0.0),
+    (5.0, 0.0),
+    (6.0, 0.0),
+    (7.0, 0.0),
+    (8.0, 0.0),
+    (1.0, 1.0),
+    (2.0, 1.0),
+    (3.0, 1.0),
+    (4.0, 1.0),
+    (5.0, 1.0),
+    (6.0, 1.0),
+    (7.0, 1.0),
+    (4.0, 2.0),
+    (4.0, 3.0),
 ];
 
 /// ⣠⣾⣿⣿⣿⣿⣿⣿⣷⣄
