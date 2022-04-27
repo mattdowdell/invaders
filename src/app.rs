@@ -4,7 +4,9 @@ use crate::assets::{Grid, Mothership, Shooter, Shot};
 
 // triggers the mothership every 2.5 mins with a 5ms tick
 // const MOTHERSHIP_INTERVAL_TICKS: u16 = 3_000;
-const MOTHERSHIP_INTERVAL_TICKS: u16 = 600;
+const MOTHERSHIP_INTERVAL_TICKS: u16 = 200;
+const ALIEN_COUNTER_DEFAULT: u8 = 4;
+const SHOT_COUNTER_MAX: u8 = 3;
 
 const DEFAULT_LIVES: u8 = 3;
 
@@ -20,6 +22,8 @@ pub struct App {
     pub grid: Grid,
     pub shots: Vec<Shot>,
     pub lives: u8,
+    alien_counter: u8,
+    shot_counter: u8,
 }
 
 impl App {
@@ -36,6 +40,8 @@ impl App {
             grid: Grid::new(),
             shots: Vec::new(),
             lives: DEFAULT_LIVES,
+            alien_counter: ALIEN_COUNTER_DEFAULT,
+            shot_counter: 0,
         }
     }
 
@@ -43,7 +49,7 @@ impl App {
     pub fn on_tick(&mut self) {
         self.shooter_moved = false;
 
-        // TODO: split into
+        // MOVE MOTHERSHIP
         if self.mothership_counter == 0 {
             if self.mothership.is_visible() {
                 self.mothership.move_left();
@@ -55,6 +61,7 @@ impl App {
             self.mothership_counter -= 1;
         }
 
+        // MOVE_SHOTS
         let mut shots_to_delete = vec![];
 
         for (i, shot) in self.shots.iter_mut().enumerate() {
@@ -67,6 +74,19 @@ impl App {
 
         for i in shots_to_delete.into_iter() {
             self.shots.remove(i);
+        }
+
+        // MOVE GRID
+        if self.alien_counter == 0 {
+            self.grid.move_along();
+            self.alien_counter = ALIEN_COUNTER_DEFAULT;
+        } else {
+            self.alien_counter -= 1;
+        }
+
+        // decrement shot buffer
+        if self.shot_counter > 0 {
+            self.shot_counter -= 1;
         }
     }
 
@@ -90,7 +110,10 @@ impl App {
 
     ///
     pub fn on_space(&mut self) {
-        self.shots.push(Shot::new(self.shooter.origin_x))
+        if self.shot_counter == 0 {
+            self.shots.push(Shot::new(self.shooter.origin_x));
+            self.shot_counter = SHOT_COUNTER_MAX;
+        }
     }
 
     ///

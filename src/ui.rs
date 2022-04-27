@@ -95,15 +95,25 @@ fn draw_game<B: Backend>(f: &mut Frame<B>, area: Rect, app: &App) {
 
     let game = Canvas::default()
         .block(Block::default().borders(Borders::ALL))
-        .x_bounds([0.0, ((chunks[index].width - (BORDER_WIDTH * 2)) * HORIZONTAL_DOTS_PER_CHAR) as f64])
-        .y_bounds([0.0, ((chunks[index].height - (BORDER_WIDTH * 2)) * VERTICAL_DOTS_PER_CHAR) as f64])
+        .x_bounds([
+            0.0,
+            ((chunks[index].width - (BORDER_WIDTH * 2)) * HORIZONTAL_DOTS_PER_CHAR) as f64,
+        ])
+        .y_bounds([
+            0.0,
+            ((chunks[index].height - (BORDER_WIDTH * 2)) * VERTICAL_DOTS_PER_CHAR) as f64,
+        ])
         .paint(|ctx| {
             ctx.draw(&app.shooter);
 
-            ctx.draw(&assets::Shield::new(20, 14));
-            ctx.draw(&assets::Shield::new(65, 14));
-            ctx.draw(&assets::Shield::new(110, 14));
-            ctx.draw(&assets::Shield::new(155, 14));
+            let shield_buffer =
+                (points::GAME_WIDTH - (2.0 * 20.0) - (4.0 * points::SHIELD_WIDTH)) / 3.0;
+
+            for i in 0..4 {
+                let shield_offset_x = 20.0 + (i as f64 * (points::SHIELD_WIDTH + shield_buffer));
+                let shield = assets::Shield::new(shield_offset_x, 14.0);
+                ctx.draw(&shield);
+            }
 
             ctx.draw(&app.grid);
             ctx.draw(&app.mothership);

@@ -128,15 +128,17 @@ pub enum ShooterForm {
 ///
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub struct Shield {
-    origin: (f64, f64),
+    origin_x: f64,
+    origin_y: f64,
     color: Color,
 }
 
 impl Shield {
     ///
-    pub fn new(origin_x: usize, origin_y: usize) -> Self {
+    pub fn new(origin_x: f64, origin_y: f64) -> Self {
         Self {
-            origin: (origin_x as f64, origin_y as f64),
+            origin_x,
+            origin_y,
             color: Color::Green,
         }
     }
@@ -149,11 +151,9 @@ impl Shield {
 
 impl Shape for Shield {
     fn draw(&self, painter: &mut Painter) {
-        let (origin_x, origin_y) = self.origin;
-
         for (x, y) in self.data() {
-            let x = x + origin_x;
-            let y = y + origin_y;
+            let x = x + self.origin_x;
+            let y = y + self.origin_y;
 
             if let Some((x, y)) = painter.get_point(x, y) {
                 painter.paint(x, y, self.color);
@@ -243,6 +243,26 @@ impl Grid {
 
         Self { rows }
     }
+
+    ///
+    pub fn move_along(&mut self) {
+        let mut on_edge = false;
+
+        for row in self.rows.iter() {
+            if row.on_edge() {
+                on_edge = true;
+                break;
+            }
+        }
+
+        for row in self.rows.iter_mut() {
+            if on_edge {
+                row.move_down();
+            } else {
+                row.move_along();
+            }
+        }
+    }
 }
 
 impl Shape for Grid {
@@ -276,6 +296,31 @@ impl Row {
         Self { aliens }
     }
 
+    ///
+    pub fn on_edge(&self) -> bool {
+        for alien in self.aliens.iter().flatten() {
+            if alien.on_edge() {
+                return true;
+            }
+        }
+
+        false
+    }
+
+    ///
+    pub fn move_along(&mut self) {
+        for alien in self.aliens.iter_mut().flatten() {
+            alien.move_along();
+        }
+    }
+
+    ///
+    pub fn move_down(&mut self) {
+        for alien in self.aliens.iter_mut().flatten() {
+            alien.move_down();
+        }
+    }
+
     // pub fn delete(&mut self, index: usize) {
     //     self.aliens[index] = None;
     // }
@@ -293,7 +338,9 @@ impl Shape for Row {
 pub struct Alien {
     monster: Monster,
     form: AlienForm,
-    origin: (f64, f64),
+    origin_x: f64,
+    origin_y: f64,
+    direction: Direction,
 }
 
 impl Alien {
@@ -302,7 +349,9 @@ impl Alien {
         Self {
             monster,
             form: AlienForm::default(),
-            origin: (origin_x, origin_y),
+            origin_x,
+            origin_y,
+            direction: Direction::default(),
         }
     }
 
@@ -332,17 +381,41 @@ impl Alien {
             Monster::Octopus => points::OCTOPUS_WIDTH,
         }
     }
+
+    ///
+    pub fn on_edge(&self) -> bool {
+        match self.direction {
+            Direction::Left => self.origin_x <= points::GRID_INITIAL_X,
+            Direction::Right => (self.origin_x + points::ALIEN_WIDTH) >= points::GAME_WIDTH,
+        }
+    }
+
+    ///
+    pub fn move_along(&mut self) {
+        self.origin_x += match self.direction {
+            Direction::Left => -1.0,
+            Direction::Right => 1.0,
+        };
+
+        self.form = self.form.switch();
+    }
+
+    ///
+    pub fn move_down(&mut self) {
+        self.origin_y -= points::ROW_HEIGHT;
+        self.direction = self.direction.switch();
+        self.form = self.form.switch();
+    }
 }
 
 impl Shape for Alien {
     fn draw(&self, painter: &mut Painter) {
-        let (origin_x, origin_y) = self.origin;
         let x_offset = ((points::ALIEN_WIDTH - self.width()) / 2.0).floor();
         let color = self.monster.color();
 
         for (x, y) in self.data() {
-            let x = x + origin_x + x_offset;
-            let y = y + origin_y;
+            let x = x + self.origin_x + x_offset;
+            let y = y + self.origin_y;
 
             if let Some((x, y)) = painter.get_point(x, y) {
                 painter.paint(x, y, color);
@@ -390,5 +463,29 @@ impl AlienForm {
 impl Default for AlienForm {
     fn default() -> Self {
         Self::Original
+    }
+}
+
+///
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub enum Direction {
+    Left,
+    Right,
+}
+
+///
+impl Direction {
+    pub fn switch(&self) -> Self {
+        match self {
+            Self::Left => Self::Right,
+            Self::Right => Self::Left,
+        }
+    }
+}
+
+///
+impl Default for Direction {
+    fn default() -> Self {
+        Self::Right
     }
 }

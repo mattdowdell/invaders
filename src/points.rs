@@ -33,10 +33,7 @@ pub const GRID_INITIAL_X: f64 = 1.0;
 pub const GRID_INITIAL_Y: f64 = MOTHERSHIP_INITIAL_Y - (5.0 * ROW_HEIGHT) - MOTHERSHIP_GRID_BUFFER;
 
 /// ⡄
-pub static SHOT: [(f64, f64); 2] = [
-    (0.0, 0.0),
-    (0.0, 1.0),
-];
+pub static SHOT: [(f64, f64); 2] = [(0.0, 0.0), (0.0, 1.0)];
 
 /// ⢀⣀⣀⣾⣆⣀⣀
 /// ⣿⣿⣿⣿⣿⣿⣿⡇
