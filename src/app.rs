@@ -1,11 +1,11 @@
 //!
 
-use crate::assets::{Cannon, Grid, Laser, MysteryShip};
+use crate::assets::{Bunkers, Cannon, Grid, Laser, MysteryShip};
 
 // triggers the mystery ship every 2.5 mins with a 5ms tick
 // const MYSTERY_SHIP_INTERVAL_TICKS: u16 = 3_000;
 const MYSTERY_SHIP_INTERVAL_TICKS: u16 = 200;
-const ALIEN_COUNTER_DEFAULT: u8 = 4;
+const ALIEN_COUNTER_DEFAULT: u8 = 5;
 const SHOT_RATELIMIT_MAX: u8 = 3;
 
 const DEFAULT_LIVES: u8 = 3;
@@ -18,18 +18,23 @@ pub struct App {
     pub paused: bool,
     pub should_quit: bool,
     pub cannon: Cannon,
+    pub bunkers: Bunkers,
     pub mystery_ship: MysteryShip,
     mystery_ship_counter: u16,
     pub grid: Grid,
     pub lasers: Vec<Laser>,
     pub lives: u8,
     alien_counter: u8,
+    alien_counter_max: u8,
     laser_ratelimit: u8,
+    count_threshold: usize,
 }
 
 impl App {
     ///
     pub fn new() -> Self {
+        let grid = Grid::new();
+
         Self {
             score: 0,
             hiscore: 0,
@@ -37,12 +42,15 @@ impl App {
             paused: false,
             should_quit: false,
             cannon: Cannon::new_normal(),
+            bunkers: Bunkers::new(),
             mystery_ship: MysteryShip::new(),
             mystery_ship_counter: MYSTERY_SHIP_INTERVAL_TICKS,
-            grid: Grid::new(),
+            count_threshold: grid.count(),
+            grid,
             lasers: Vec::new(),
             lives: DEFAULT_LIVES,
             alien_counter: ALIEN_COUNTER_DEFAULT,
+            alien_counter_max: ALIEN_COUNTER_DEFAULT,
             laser_ratelimit: 0,
         }
     }
@@ -55,8 +63,13 @@ impl App {
     ///
     pub fn on_tick(&mut self) {
         self.move_mystery_ship();
-        self.move_shots();
         self.move_grid();
+        self.check_lasers();
+
+        self.move_lasers();
+        self.check_lasers();
+
+        self.check_threshold();
 
         // decrement shot ratelimit
         if self.laser_ratelimit > 0 {
@@ -77,7 +90,7 @@ impl App {
         }
     }
 
-    fn move_shots(&mut self) {
+    fn move_lasers(&mut self) {
         let mut lasers_to_delete = vec![];
 
         for (i, laser) in self.lasers.iter_mut().enumerate() {
@@ -93,12 +106,37 @@ impl App {
         }
     }
 
+    fn check_lasers(&mut self) {
+        let mut lasers_to_delete = vec![];
+
+        for (i, laser) in self.lasers.iter().enumerate() {
+            if let Some(score) = self.grid.dies(laser) {
+                self.score += score;
+                lasers_to_delete.push(i);
+            }
+        }
+
+        for i in lasers_to_delete.into_iter() {
+            self.lasers.remove(i);
+        }
+    }
+
     fn move_grid(&mut self) {
         if self.alien_counter == 0 {
             self.grid.move_along();
-            self.alien_counter = ALIEN_COUNTER_DEFAULT;
+            self.alien_counter = self.alien_counter_max;
         } else {
             self.alien_counter -= 1;
+        }
+    }
+
+    fn check_threshold(&mut self) {
+        if self.grid.count() <= (self.count_threshold / 2) {
+            self.count_threshold /= 2;
+
+            if self.alien_counter_max > 0 {
+                self.alien_counter_max -= 1;
+            }
         }
     }
 

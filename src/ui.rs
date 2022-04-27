@@ -118,16 +118,7 @@ fn draw_game<B: Backend>(f: &mut Frame<B>, area: Rect, app: &App) {
         ])
         .paint(|ctx| {
             ctx.draw(&app.cannon);
-
-            let shield_buffer =
-                (points::GAME_WIDTH - (2.0 * 20.0) - (4.0 * points::BUNKER_WIDTH)) / 3.0;
-
-            for i in 0..4 {
-                let shield_offset_x = 20.0 + (i as f64 * (points::BUNKER_WIDTH + shield_buffer));
-                let shield = assets::Bunker::new(shield_offset_x, 14.0);
-                ctx.draw(&shield);
-            }
-
+            ctx.draw(&app.bunkers);
             ctx.draw(&app.grid);
             ctx.draw(&app.mystery_ship);
 

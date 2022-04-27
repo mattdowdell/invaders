@@ -5,6 +5,8 @@ use tui::widgets::canvas::{Painter, Shape};
 
 use crate::points;
 
+const INVADERS_PER_ROW: usize = 8;
+
 ///
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub struct Laser {
@@ -25,12 +27,22 @@ impl Laser {
 
     ///
     pub fn move_up(&mut self) {
-        self.origin_y += 2.0
+        self.origin_y += points::LASER_MOVE;
     }
 
     ///
     pub fn is_visible(&self) -> bool {
         self.origin_y < (points::GAME_HEIGHT + 1.0)
+    }
+
+    ///
+    pub fn area(&self) -> Area {
+        Area::new(
+            self.origin_x,
+            self.origin_y,
+            self.origin_x + points::LASER_WIDTH,
+            self.origin_y + points::LASER_HEIGHT,
+        )
     }
 
     //
@@ -85,14 +97,14 @@ impl Cannon {
     ///
     pub fn move_left(&mut self) {
         if self.origin_x > 1.0 {
-            self.origin_x -= 2.0;
+            self.origin_x -= points::CANNON_MOVE;
         }
     }
 
     ///
     pub fn move_right(&mut self) {
         if self.origin_x < (points::GAME_WIDTH - points::CANNON_WIDTH) {
-            self.origin_x += 2.0;
+            self.origin_x += points::CANNON_MOVE;
         }
     }
 
@@ -126,11 +138,46 @@ pub enum CannonForm {
 }
 
 ///
-#[derive(Copy, Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
+pub struct Bunkers {
+    bunkers: Vec<Bunker>,
+}
+
+impl Bunkers {
+    ///
+    pub fn new() -> Self {
+        let mut bunkers = Vec::new();
+        let x_spacing =
+            (points::GAME_WIDTH - (2.0 * points::BUNKER_OFFSET_X) - (4.0 * points::BUNKER_WIDTH))
+                / 3.0;
+
+        for i in 0..4 {
+            let x_offset =
+                points::BUNKER_OFFSET_X + (i as f64 * (points::BUNKER_WIDTH + x_spacing));
+            let bunker = Bunker::new(x_offset, points::BUNKER_INITIAL_Y);
+
+            bunkers.push(bunker)
+        }
+
+        Self { bunkers }
+    }
+}
+
+impl Shape for Bunkers {
+    fn draw(&self, painter: &mut Painter) {
+        for bunker in self.bunkers.iter() {
+            bunker.draw(painter);
+        }
+    }
+}
+
+///
+#[derive(Clone, Debug, PartialEq)]
 pub struct Bunker {
     origin_x: f64,
     origin_y: f64,
     color: Color,
+    data: Vec<(f64, f64)>,
 }
 
 impl Bunker {
@@ -140,18 +187,14 @@ impl Bunker {
             origin_x,
             origin_y,
             color: Color::Green,
+            data: points::BUNKER.into(),
         }
-    }
-
-    //
-    fn data(&self) -> &'static [(f64, f64)] {
-        &points::BUNKER
     }
 }
 
 impl Shape for Bunker {
     fn draw(&self, painter: &mut Painter) {
-        for (x, y) in self.data() {
+        for (x, y) in self.data.iter() {
             let x = x + self.origin_x;
             let y = y + self.origin_y;
 
@@ -159,6 +202,35 @@ impl Shape for Bunker {
                 painter.paint(x, y, self.color);
             }
         }
+    }
+}
+
+///
+#[derive(Copy, Clone, Debug, PartialEq)]
+pub struct Area {
+    pub min_x: f64,
+    pub min_y: f64,
+    pub max_x: f64,
+    pub max_y: f64,
+}
+
+impl Area {
+    ///
+    pub fn new(min_x: f64, min_y: f64, max_x: f64, max_y: f64) -> Self {
+        Self {
+            min_x,
+            min_y,
+            max_x,
+            max_y,
+        }
+    }
+
+    ///
+    pub fn overlaps(&self, other: Area) -> bool {
+        self.min_x <= other.min_x
+            && self.min_y <= other.min_y
+            && other.max_x <= self.max_x
+            && other.max_y <= self.max_y
     }
 }
 
@@ -191,7 +263,7 @@ impl MysteryShip {
     ///
     pub fn move_left(&mut self) {
         if self.is_visible() {
-            self.origin_x -= 2.0
+            self.origin_x -= points::MYSTERY_SHIP_MOVE;
         }
     }
 
@@ -218,6 +290,9 @@ impl Shape for MysteryShip {
 #[derive(Clone, Debug, PartialEq)]
 pub struct Grid {
     rows: Vec<Row>,
+    origin_x: f64,
+    origin_y: f64,
+    direction: Direction,
 }
 
 impl Grid {
@@ -241,7 +316,12 @@ impl Grid {
             rows.push(row);
         }
 
-        Self { rows }
+        Self {
+            rows,
+            origin_x: points::GRID_INITIAL_X,
+            origin_y: points::GRID_INITIAL_Y,
+            direction: Direction::default(),
+        }
     }
 
     ///
@@ -249,19 +329,72 @@ impl Grid {
         let mut on_edge = false;
 
         for row in self.rows.iter() {
-            if row.on_edge() {
+            if row.on_edge(self.direction) {
                 on_edge = true;
                 break;
             }
         }
 
+        if on_edge {
+            self.direction = self.direction.switch();
+            self.origin_y -= points::ROW_HEIGHT;
+        } else {
+            self.origin_x += match self.direction {
+                Direction::Left => -1.0 * points::INVADER_MOVE,
+                Direction::Right => points::INVADER_MOVE,
+            };
+        }
+
         for row in self.rows.iter_mut() {
             if on_edge {
-                row.move_down();
+                row.move_down(points::ROW_HEIGHT);
             } else {
-                row.move_along();
+                row.move_along(self.direction, points::INVADER_MOVE);
             }
         }
+    }
+
+    pub fn dies(&mut self, laser: &Laser) -> Option<u32> {
+        if self.area().overlaps(laser.area()) {
+            for row in self.rows.iter_mut() {
+                if let Some(score) = row.dies(laser) {
+                    return Some(score);
+                }
+            }
+        }
+
+        None
+    }
+
+    ///
+    pub fn area(&self) -> Area {
+        let mut row_width = 0.0;
+
+        for row in self.rows.iter() {
+            let width = row.width();
+
+            if row_width < row.width() {
+                row_width = width;
+            }
+        }
+
+        Area::new(
+            self.origin_x,
+            self.origin_y,
+            self.origin_x + row_width,
+            self.origin_y + (5.0 * points::ROW_HEIGHT),
+        )
+    }
+
+    ///
+    pub fn count(&self) -> usize {
+        let mut count = 0;
+
+        for row in self.rows.iter() {
+            count += row.count;
+        }
+
+        count
     }
 }
 
@@ -277,6 +410,10 @@ impl Shape for Grid {
 #[derive(Clone, Debug, PartialEq)]
 pub struct Row {
     aliens: Vec<Option<Alien>>,
+    origin_x: f64,
+    origin_y: f64,
+    pub size: usize,
+    pub count: usize,
 }
 
 impl Row {
@@ -284,7 +421,7 @@ impl Row {
     pub fn new(monster: Monster, origin_x: f64, origin_y: f64) -> Self {
         let mut aliens = Vec::new();
 
-        for i in 0..8 {
+        for i in 0..INVADERS_PER_ROW {
             let alien = Alien::new(
                 monster,
                 origin_x + (points::ALIEN_WIDTH + points::ALIEN_BUFFER_WIDTH) * (i as f64),
@@ -293,13 +430,19 @@ impl Row {
             aliens.push(Some(alien));
         }
 
-        Self { aliens }
+        Self {
+            aliens,
+            origin_x,
+            origin_y,
+            size: INVADERS_PER_ROW,
+            count: INVADERS_PER_ROW,
+        }
     }
 
     ///
-    pub fn on_edge(&self) -> bool {
+    pub fn on_edge(&self, direction: Direction) -> bool {
         for alien in self.aliens.iter().flatten() {
-            if alien.on_edge() {
+            if alien.on_edge(direction) {
                 return true;
             }
         }
@@ -308,22 +451,66 @@ impl Row {
     }
 
     ///
-    pub fn move_along(&mut self) {
+    pub fn move_along(&mut self, direction: Direction, movement: f64) {
+        self.origin_x += match direction {
+            Direction::Left => -1.0 * points::INVADER_MOVE,
+            Direction::Right => points::INVADER_MOVE,
+        };
+
         for alien in self.aliens.iter_mut().flatten() {
-            alien.move_along();
+            alien.move_along(direction, movement);
         }
     }
 
     ///
-    pub fn move_down(&mut self) {
+    pub fn move_down(&mut self, movement: f64) {
+        self.origin_y -= points::ROW_HEIGHT;
+
         for alien in self.aliens.iter_mut().flatten() {
-            alien.move_down();
+            alien.move_down(movement);
         }
     }
 
-    // pub fn delete(&mut self, index: usize) {
-    //     self.aliens[index] = None;
-    // }
+    ///
+    pub fn dies(&mut self, laser: &Laser) -> Option<u32> {
+        if self.area().overlaps(laser.area()) {
+            for (i, alien) in self.aliens.iter_mut().enumerate() {
+                if let Some(alien) = alien {
+                    if let Some(score) = alien.dies(laser) {
+                        self.delete(i);
+                        return Some(score);
+                    }
+                }
+            }
+        }
+
+        None
+    }
+
+    ///
+    pub fn area(&self) -> Area {
+        Area::new(
+            self.origin_x,
+            self.origin_y,
+            self.origin_x + self.width(),
+            self.origin_y + points::ALIEN_HEIGHT,
+        )
+    }
+
+    ///
+    pub fn width(&self) -> f64 {
+        let size = self.size as f64;
+        (size * points::ALIEN_WIDTH) + ((size - 1.0) * points::ALIEN_BUFFER_WIDTH)
+    }
+
+    ///
+    pub fn delete(&mut self, index: usize) {
+        if self.aliens[index].is_some() {
+            self.aliens[index] = None;
+            self.count -= 1;
+            // TODO: refresh self.size
+        }
+    }
 }
 
 impl Shape for Row {
@@ -340,7 +527,6 @@ pub struct Alien {
     form: AlienForm,
     origin_x: f64,
     origin_y: f64,
-    direction: Direction,
 }
 
 impl Alien {
@@ -351,7 +537,6 @@ impl Alien {
             form: AlienForm::default(),
             origin_x,
             origin_y,
-            direction: Direction::default(),
         }
     }
 
@@ -383,34 +568,58 @@ impl Alien {
     }
 
     ///
-    pub fn on_edge(&self) -> bool {
-        match self.direction {
+    pub fn on_edge(&self, direction: Direction) -> bool {
+        match direction {
             Direction::Left => self.origin_x <= points::GRID_INITIAL_X,
             Direction::Right => (self.origin_x + points::ALIEN_WIDTH) >= points::GAME_WIDTH,
         }
     }
 
     ///
-    pub fn move_along(&mut self) {
-        self.origin_x += match self.direction {
-            Direction::Left => -1.0,
-            Direction::Right => 1.0,
+    pub fn move_along(&mut self, direction: Direction, movement: f64) {
+        self.origin_x += match direction {
+            Direction::Left => -1.0 * movement,
+            Direction::Right => movement,
         };
 
         self.form = self.form.switch();
     }
 
     ///
-    pub fn move_down(&mut self) {
-        self.origin_y -= points::ROW_HEIGHT;
-        self.direction = self.direction.switch();
+    pub fn move_down(&mut self, movement: f64) {
+        self.origin_y -= movement;
         self.form = self.form.switch();
+    }
+
+    ///
+    pub fn dies(&self, laser: &Laser) -> Option<u32> {
+        if self.area().overlaps(laser.area()) {
+            Some(self.monster.score())
+        } else {
+            None
+        }
+    }
+
+    ///
+    pub fn area(&self) -> Area {
+        let x_offset = self.draw_x_offset();
+
+        Area::new(
+            self.origin_x + x_offset,
+            self.origin_y,
+            self.origin_x + x_offset + self.width(),
+            self.origin_y + points::ALIEN_HEIGHT,
+        )
+    }
+
+    fn draw_x_offset(&self) -> f64 {
+        ((points::ALIEN_WIDTH - self.width()) / 2.0).floor()
     }
 }
 
 impl Shape for Alien {
     fn draw(&self, painter: &mut Painter) {
-        let x_offset = ((points::ALIEN_WIDTH - self.width()) / 2.0).floor();
+        let x_offset = self.draw_x_offset();
         let color = self.monster.color();
 
         for (x, y) in self.data() {
@@ -440,6 +649,15 @@ impl Monster {
             Self::Octopus => Color::Cyan,
         }
     }
+
+    ///
+    pub fn score(&self) -> u32 {
+        match self {
+            Self::Crab => 20,
+            Self::Squid => 30,
+            Self::Octopus => 10,
+        }
+    }
 }
 
 ///
@@ -451,6 +669,7 @@ pub enum AlienForm {
 
 ///
 impl AlienForm {
+    ///
     pub fn switch(&self) -> Self {
         match self {
             Self::Original => Self::Alternate,
