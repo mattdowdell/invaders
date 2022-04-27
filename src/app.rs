@@ -1,129 +1,141 @@
 //!
 
-use crate::assets::{Grid, Mothership, Shooter, Shot};
+use crate::assets::{Cannon, Grid, Laser, MysteryShip};
 
-// triggers the mothership every 2.5 mins with a 5ms tick
-// const MOTHERSHIP_INTERVAL_TICKS: u16 = 3_000;
-const MOTHERSHIP_INTERVAL_TICKS: u16 = 200;
+// triggers the mystery ship every 2.5 mins with a 5ms tick
+// const MYSTERY_SHIP_INTERVAL_TICKS: u16 = 3_000;
+const MYSTERY_SHIP_INTERVAL_TICKS: u16 = 200;
 const ALIEN_COUNTER_DEFAULT: u8 = 4;
-const SHOT_COUNTER_MAX: u8 = 3;
+const SHOT_RATELIMIT_MAX: u8 = 3;
 
 const DEFAULT_LIVES: u8 = 3;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct App {
-    show_help: bool,
-    paused: bool,
+    pub score: u32,
+    pub hiscore: u32,
+    pub show_help: bool,
+    pub paused: bool,
     pub should_quit: bool,
-    pub shooter: Shooter,
-    shooter_moved: bool,
-    pub mothership: Mothership,
-    mothership_counter: u16,
+    pub cannon: Cannon,
+    pub mystery_ship: MysteryShip,
+    mystery_ship_counter: u16,
     pub grid: Grid,
-    pub shots: Vec<Shot>,
+    pub lasers: Vec<Laser>,
     pub lives: u8,
     alien_counter: u8,
-    shot_counter: u8,
+    laser_ratelimit: u8,
 }
 
 impl App {
     ///
     pub fn new() -> Self {
         Self {
+            score: 0,
+            hiscore: 0,
             show_help: false,
             paused: false,
             should_quit: false,
-            shooter: Shooter::new_normal(),
-            shooter_moved: false,
-            mothership: Mothership::new(),
-            mothership_counter: MOTHERSHIP_INTERVAL_TICKS,
+            cannon: Cannon::new_normal(),
+            mystery_ship: MysteryShip::new(),
+            mystery_ship_counter: MYSTERY_SHIP_INTERVAL_TICKS,
             grid: Grid::new(),
-            shots: Vec::new(),
+            lasers: Vec::new(),
             lives: DEFAULT_LIVES,
             alien_counter: ALIEN_COUNTER_DEFAULT,
-            shot_counter: 0,
+            laser_ratelimit: 0,
         }
     }
 
     ///
-    pub fn on_tick(&mut self) {
-        self.shooter_moved = false;
+    pub fn is_paused(&self) -> bool {
+        self.paused || self.show_help
+    }
 
-        // MOVE MOTHERSHIP
-        if self.mothership_counter == 0 {
-            if self.mothership.is_visible() {
-                self.mothership.move_left();
+    ///
+    pub fn on_tick(&mut self) {
+        self.move_mystery_ship();
+        self.move_shots();
+        self.move_grid();
+
+        // decrement shot ratelimit
+        if self.laser_ratelimit > 0 {
+            self.laser_ratelimit -= 1;
+        }
+    }
+
+    fn move_mystery_ship(&mut self) {
+        if self.mystery_ship_counter == 0 {
+            if self.mystery_ship.is_visible() {
+                self.mystery_ship.move_left();
             } else {
-                self.mothership.reset();
-                self.mothership_counter = MOTHERSHIP_INTERVAL_TICKS;
+                self.mystery_ship.reset();
+                self.mystery_ship_counter = MYSTERY_SHIP_INTERVAL_TICKS;
             }
         } else {
-            self.mothership_counter -= 1;
+            self.mystery_ship_counter -= 1;
         }
+    }
 
-        // MOVE_SHOTS
-        let mut shots_to_delete = vec![];
+    fn move_shots(&mut self) {
+        let mut lasers_to_delete = vec![];
 
-        for (i, shot) in self.shots.iter_mut().enumerate() {
-            if shot.is_visible() {
-                shot.move_up();
+        for (i, laser) in self.lasers.iter_mut().enumerate() {
+            if laser.is_visible() {
+                laser.move_up();
             } else {
-                shots_to_delete.push(i);
+                lasers_to_delete.push(i);
             }
         }
 
-        for i in shots_to_delete.into_iter() {
-            self.shots.remove(i);
+        for i in lasers_to_delete.into_iter() {
+            self.lasers.remove(i);
         }
+    }
 
-        // MOVE GRID
+    fn move_grid(&mut self) {
         if self.alien_counter == 0 {
             self.grid.move_along();
             self.alien_counter = ALIEN_COUNTER_DEFAULT;
         } else {
             self.alien_counter -= 1;
         }
-
-        // decrement shot buffer
-        if self.shot_counter > 0 {
-            self.shot_counter -= 1;
-        }
     }
 
     ///
     pub fn on_left(&mut self) {
-        if !self.shooter_moved {
-            self.shooter.move_left();
+        if !self.is_paused() {
+            self.cannon.move_left();
         }
-
-        self.shooter_moved = true;
     }
 
     ///
     pub fn on_right(&mut self) {
-        if !self.shooter_moved {
-            self.shooter.move_right();
+        if !self.is_paused() {
+            self.cannon.move_right();
         }
-
-        self.shooter_moved = true;
     }
 
     ///
     pub fn on_space(&mut self) {
-        if self.shot_counter == 0 {
-            self.shots.push(Shot::new(self.shooter.origin_x));
-            self.shot_counter = SHOT_COUNTER_MAX;
+        if !self.is_paused() && self.laser_ratelimit == 0 {
+            self.lasers.push(Laser::new(self.cannon.origin_x));
+            self.laser_ratelimit = SHOT_RATELIMIT_MAX;
         }
     }
 
     ///
     pub fn on_h(&mut self) {
-        self.show_help = true;
+        if !self.paused {
+            self.show_help ^= true;
+        }
     }
 
     ///
     pub fn on_p(&mut self) {
-        self.paused ^= true;
+        if !self.show_help {
+            self.paused ^= true;
+        }
     }
 
     ///

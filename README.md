@@ -1,8 +1,8 @@
 # invaders
 
-![rustc 1.60]
+![msrv 1.60]
 
-[rustc 1.60]: https://img.shields.io/badge/rust-1.60-blue
+[msrv 1.60]: https://img.shields.io/badge/msrv-1.60-blue
 
 ## UI Design
 
@@ -35,9 +35,10 @@
 
 ## Tasks
 
-- Add help tab (or popup?).
-- Add pause support.
 - Move shields into app.
+- Do something with `Ctrl+Z` (`SIGSTOP`/`SIGCONT`).
+    - Probably worth handling `SIGINT` properly as well.
+
 
 ## Build
 

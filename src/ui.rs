@@ -7,7 +7,7 @@ use tui::widgets::canvas::Canvas;
 use tui::{
     layout::{Constraint, Direction, Layout},
     text::{Span, Spans},
-    widgets::{Block, Borders, Paragraph, Tabs},
+    widgets::{Block, Borders, Clear, Paragraph, Row, Table, Tabs, Widget},
 };
 
 use crate::app::App;
@@ -26,7 +26,17 @@ const VERTICAL_DOTS_PER_CHAR: u16 = 4;
 const HORIZONTAL_DOTS_PER_CHAR: u16 = 2;
 
 const BORDER_WIDTH: u16 = 1;
-const GAME_WIDTH: u16 = 102;
+const GAME_WIDTH: u16 = 100 + (2 * BORDER_WIDTH);
+const GAME_HEIGHT: u16 = 33 + (2 * BORDER_WIDTH);
+const ROW_HEIGHT: u16 = 1 + (2 * BORDER_WIDTH);
+
+const APP_HEIGHT: u16 = (3 * ROW_HEIGHT) + GAME_HEIGHT;
+
+const HELP_WIDTH: u16 = 25 + (2 * BORDER_WIDTH);
+const HELP_HEIGHT: u16 = 6 + (2 * BORDER_WIDTH);
+
+const PAUSE_WIDTH: u16 = 18 + (2 * BORDER_WIDTH);
+const PAUSE_HEIGHT: u16 = 1 + (2 * BORDER_WIDTH);
 
 ///
 pub fn draw<B: Backend>(f: &mut Frame<B>, app: &App) {
@@ -37,21 +47,28 @@ pub fn draw<B: Backend>(f: &mut Frame<B>, app: &App) {
     let chunks = Layout::default()
         .direction(Direction::Vertical)
         .constraints([
-            Constraint::Length(3),
-            Constraint::Length(3),
-            Constraint::Length(35),
-            Constraint::Length(3),
+            Constraint::Length(ROW_HEIGHT),
+            Constraint::Length(ROW_HEIGHT),
+            Constraint::Length(GAME_HEIGHT),
+            Constraint::Length(ROW_HEIGHT),
             Constraint::Min(0),
         ])
         .split(size);
 
     draw_tabs(f, chunks[0]);
-    draw_score(f, chunks[1]);
+    draw_score(f, chunks[1], app.score, app.hiscore);
     draw_game(f, chunks[2], app);
     draw_lives(f, chunks[3], app.lives);
+
+    if app.show_help {
+        draw_help_popup(f, size);
+    }
+
+    if app.paused {
+        draw_paused_popup(f, size);
+    }
 }
 
-// TODO: change tabs based on whether help is active
 fn draw_tabs<B: Backend>(f: &mut Frame<B>, area: Rect) {
     let titles = [HELP_TAB, PAUSE_TAB, QUIT_TAB]
         .iter()
@@ -65,11 +82,7 @@ fn draw_tabs<B: Backend>(f: &mut Frame<B>, area: Rect) {
     f.render_widget(tabs_widget, area);
 }
 
-// TODO: take scores as input
-fn draw_score<B: Backend>(f: &mut Frame<B>, area: Rect) {
-    let score: u32 = 100;
-    let hiscore: u32 = 1000;
-
+fn draw_score<B: Backend>(f: &mut Frame<B>, area: Rect, score: u32, hiscore: u32) {
     let chunks = Layout::default()
         .direction(Direction::Horizontal)
         .constraints([Constraint::Percentage(50), Constraint::Percentage(50)])
@@ -104,22 +117,22 @@ fn draw_game<B: Backend>(f: &mut Frame<B>, area: Rect, app: &App) {
             ((chunks[index].height - (BORDER_WIDTH * 2)) * VERTICAL_DOTS_PER_CHAR) as f64,
         ])
         .paint(|ctx| {
-            ctx.draw(&app.shooter);
+            ctx.draw(&app.cannon);
 
             let shield_buffer =
-                (points::GAME_WIDTH - (2.0 * 20.0) - (4.0 * points::SHIELD_WIDTH)) / 3.0;
+                (points::GAME_WIDTH - (2.0 * 20.0) - (4.0 * points::BUNKER_WIDTH)) / 3.0;
 
             for i in 0..4 {
-                let shield_offset_x = 20.0 + (i as f64 * (points::SHIELD_WIDTH + shield_buffer));
-                let shield = assets::Shield::new(shield_offset_x, 14.0);
+                let shield_offset_x = 20.0 + (i as f64 * (points::BUNKER_WIDTH + shield_buffer));
+                let shield = assets::Bunker::new(shield_offset_x, 14.0);
                 ctx.draw(&shield);
             }
 
             ctx.draw(&app.grid);
-            ctx.draw(&app.mothership);
+            ctx.draw(&app.mystery_ship);
 
-            for shot in app.shots.iter() {
-                ctx.draw(shot);
+            for laser in app.lasers.iter() {
+                ctx.draw(laser);
             }
         });
 
@@ -143,7 +156,6 @@ fn game_constraints(width: u16) -> (Vec<Constraint>, usize) {
     }
 }
 
-// TODO: take lives as input
 fn draw_lives<B: Backend>(f: &mut Frame<B>, area: Rect, lives: u8) {
     let canvas_width = (area.width - (BORDER_WIDTH * 2)) * HORIZONTAL_DOTS_PER_CHAR;
     let canvas_height = (area.height - (BORDER_WIDTH * 2)) * VERTICAL_DOTS_PER_CHAR;
@@ -154,11 +166,65 @@ fn draw_lives<B: Backend>(f: &mut Frame<B>, area: Rect, lives: u8) {
         .y_bounds([0.0, canvas_height as f64])
         .paint(|ctx| {
             for i in 1..=lives {
-                // TODO: move 12 to constants
-                let x_offset = (i - 1) as f64 * (points::SHOOTER_SMALL_WIDTH + 4.0);
-                ctx.draw(&assets::Shooter::new_small(x_offset as f64));
+                let x_offset = (i - 1) as f64 * (points::CANNON_SMALL_WIDTH + 4.0);
+                ctx.draw(&assets::Cannon::new_small(x_offset as f64));
             }
         });
 
     f.render_widget(lives_widget, area);
+}
+
+fn draw_help_popup<B: Backend>(f: &mut Frame<B>, area: Rect) {
+    let popup = Table::new(vec![
+        Row::new(vec!["  H", "Open/close help"]),
+        Row::new(vec!["  ←", "Move cannon left"]),
+        Row::new(vec!["  →", "Move cannon right"]),
+        Row::new(vec!["SPACE", "Fire cannon"]),
+        Row::new(vec!["  P", "Pause/unpause"]),
+        Row::new(vec!["  Q", "Quit"]),
+    ])
+    .widths(&[Constraint::Length(5), Constraint::Length(17)])
+    .column_spacing(3)
+    .block(Block::default().borders(Borders::ALL).title("Help"));
+
+    draw_popup(f, area, popup, HELP_WIDTH, HELP_HEIGHT);
+}
+
+fn draw_paused_popup<B: Backend>(f: &mut Frame<B>, area: Rect) {
+    let popup = Paragraph::new(Span::raw("Press P to unpause"))
+        .block(Block::default().borders(Borders::ALL).title("Paused"));
+
+    draw_popup(f, area, popup, PAUSE_WIDTH, PAUSE_HEIGHT);
+}
+
+fn draw_popup<B: Backend, W: Widget>(
+    f: &mut Frame<B>,
+    area: Rect,
+    widget: W,
+    width: u16,
+    height: u16,
+) {
+    let y_offset = (APP_HEIGHT - height) / 2;
+    let x_offset = (area.width - width) / 2;
+
+    let vertical_chunks = Layout::default()
+        .direction(Direction::Vertical)
+        .constraints([
+            Constraint::Length(y_offset),
+            Constraint::Length(height),
+            Constraint::Min(0),
+        ])
+        .split(area);
+
+    let horizontal_chunks = Layout::default()
+        .direction(Direction::Horizontal)
+        .constraints([
+            Constraint::Length(x_offset),
+            Constraint::Length(width),
+            Constraint::Min(0),
+        ])
+        .split(vertical_chunks[1]);
+
+    f.render_widget(Clear, horizontal_chunks[1]);
+    f.render_widget(widget, horizontal_chunks[1]);
 }

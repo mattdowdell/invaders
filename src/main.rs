@@ -61,7 +61,10 @@ fn main() -> Result<(), io::Error> {
         }
 
         if last_tick.elapsed() >= tick_rate {
-            app.on_tick();
+            if !app.is_paused() {
+                app.on_tick();
+            }
+
             last_tick = Instant::now();
         }
     }

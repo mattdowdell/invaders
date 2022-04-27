@@ -7,18 +7,18 @@ use crate::points;
 
 ///
 #[derive(Copy, Clone, Debug, PartialEq)]
-pub struct Shot {
+pub struct Laser {
     origin_x: f64,
     origin_y: f64,
     color: Color,
 }
 
-impl Shot {
+impl Laser {
     ///
     pub fn new(shooter_origin_x: f64) -> Self {
         Self {
-            origin_x: shooter_origin_x + points::SHOT_INITIAL_X_OFFSET,
-            origin_y: points::SHOT_INITIAL_Y,
+            origin_x: shooter_origin_x + points::LASER_INITIAL_X_OFFSET,
+            origin_y: points::LASER_INITIAL_Y,
             color: Color::Green,
         }
     }
@@ -35,11 +35,11 @@ impl Shot {
 
     //
     fn data(&self) -> &'static [(f64, f64)] {
-        &points::SHOT
+        &points::LASER
     }
 }
 
-impl Shape for Shot {
+impl Shape for Laser {
     fn draw(&self, painter: &mut Painter) {
         for (x, y) in self.data() {
             let x = x + self.origin_x;
@@ -54,20 +54,20 @@ impl Shape for Shot {
 
 ///
 #[derive(Copy, Clone, Debug, PartialEq)]
-pub struct Shooter {
+pub struct Cannon {
     pub origin_x: f64,
     origin_y: f64,
-    form: ShooterForm,
+    form: CannonForm,
     color: Color,
 }
 
-impl Shooter {
+impl Cannon {
     ///
     pub fn new_normal() -> Self {
         Self {
-            origin_x: points::SHOOTER_INITIAL_X,
-            origin_y: points::SHOOTER_INITIAL_Y,
-            form: ShooterForm::Normal,
+            origin_x: points::CANNON_INITIAL_X,
+            origin_y: points::CANNON_INITIAL_Y,
+            form: CannonForm::Normal,
             color: Color::Green,
         }
     }
@@ -75,9 +75,9 @@ impl Shooter {
     ///
     pub fn new_small(x_offset: f64) -> Self {
         Self {
-            origin_x: points::SHOOTER_INITIAL_X + x_offset,
-            origin_y: points::SHOOTER_INITIAL_Y,
-            form: ShooterForm::Small,
+            origin_x: points::CANNON_INITIAL_X + x_offset,
+            origin_y: points::CANNON_INITIAL_Y,
+            form: CannonForm::Small,
             color: Color::Green,
         }
     }
@@ -91,7 +91,7 @@ impl Shooter {
 
     ///
     pub fn move_right(&mut self) {
-        if self.origin_x < (points::GAME_WIDTH - points::SHOOTER_WIDTH) {
+        if self.origin_x < (points::GAME_WIDTH - points::CANNON_WIDTH) {
             self.origin_x += 2.0;
         }
     }
@@ -99,13 +99,13 @@ impl Shooter {
     //
     fn data(&self) -> &'static [(f64, f64)] {
         match self.form {
-            ShooterForm::Normal => &points::SHOOTER,
-            ShooterForm::Small => &points::SHOOTER_SMALL,
+            CannonForm::Normal => &points::CANNON,
+            CannonForm::Small => &points::CANNON_SMALL,
         }
     }
 }
 
-impl Shape for Shooter {
+impl Shape for Cannon {
     fn draw(&self, painter: &mut Painter) {
         for (x, y) in self.data() {
             let x = x + self.origin_x;
@@ -120,20 +120,20 @@ impl Shape for Shooter {
 
 ///
 #[derive(Copy, Clone, Debug, PartialEq)]
-pub enum ShooterForm {
+pub enum CannonForm {
     Normal,
     Small,
 }
 
 ///
 #[derive(Copy, Clone, Debug, PartialEq)]
-pub struct Shield {
+pub struct Bunker {
     origin_x: f64,
     origin_y: f64,
     color: Color,
 }
 
-impl Shield {
+impl Bunker {
     ///
     pub fn new(origin_x: f64, origin_y: f64) -> Self {
         Self {
@@ -145,11 +145,11 @@ impl Shield {
 
     //
     fn data(&self) -> &'static [(f64, f64)] {
-        &points::SHIELD
+        &points::BUNKER
     }
 }
 
-impl Shape for Shield {
+impl Shape for Bunker {
     fn draw(&self, painter: &mut Painter) {
         for (x, y) in self.data() {
             let x = x + self.origin_x;
@@ -164,28 +164,28 @@ impl Shape for Shield {
 
 ///
 #[derive(Copy, Clone, Debug, PartialEq)]
-pub struct Mothership {
+pub struct MysteryShip {
     origin_x: f64,
     origin_y: f64,
     color: Color,
 }
 
-impl Mothership {
+impl MysteryShip {
     ///
     pub fn new() -> Self {
         Self {
-            origin_x: points::MOTHERSHIP_INITIAL_X,
-            origin_y: points::MOTHERSHIP_INITIAL_Y,
+            origin_x: points::MYSTERY_SHIP_INITIAL_X,
+            origin_y: points::MYSTERY_SHIP_INITIAL_Y,
             color: Color::Red,
         }
     }
 
     pub fn reset(&mut self) {
-        self.origin_x = points::MOTHERSHIP_INITIAL_X;
+        self.origin_x = points::MYSTERY_SHIP_INITIAL_X;
     }
 
     pub fn is_visible(&self) -> bool {
-        self.origin_x > (0.0 - points::MOTHERSHIP_WIDTH)
+        self.origin_x > (0.0 - points::MYSTERY_SHIP_WIDTH)
     }
 
     ///
@@ -197,11 +197,11 @@ impl Mothership {
 
     //
     fn data(&self) -> &'static [(f64, f64)] {
-        &points::MOTHERSHIP
+        &points::MYSTERY_SHIP
     }
 }
 
-impl Shape for Mothership {
+impl Shape for MysteryShip {
     fn draw(&self, painter: &mut Painter) {
         for (x, y) in self.data() {
             let x = x + self.origin_x;
@@ -225,11 +225,11 @@ impl Grid {
     pub fn new() -> Self {
         let mut rows = Vec::new();
         let monsters = vec![
-            Monster::Crab,
-            Monster::Crab,
-            Monster::Squid,
-            Monster::Squid,
             Monster::Octopus,
+            Monster::Octopus,
+            Monster::Crab,
+            Monster::Crab,
+            Monster::Squid,
         ];
 
         for (i, monster) in monsters.into_iter().enumerate() {
