@@ -66,7 +66,13 @@ impl App {
         self.move_lasers();
         self.check_lasers();
 
-        self.check_threshold();
+        if self.grid.is_empty() {
+            self.grid = Grid::new();
+            self.count_threshold = self.grid.count();
+            self.alien_counter_max = ALIEN_COUNTER_DEFAULT;
+        } else {
+            self.check_threshold();
+        }
     }
 
     fn move_mystery_ship(&mut self) {

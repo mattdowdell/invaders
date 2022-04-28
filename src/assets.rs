@@ -449,6 +449,17 @@ impl Grid {
 
         count
     }
+
+    ///
+    pub fn is_empty(&self) -> bool {
+        for row in self.rows.iter() {
+            if !row.is_empty() {
+                return false;
+            }
+        }
+
+        true
+    }
 }
 
 impl Shape for Grid {
@@ -563,6 +574,11 @@ impl Row {
             self.count -= 1;
             // TODO: refresh self.size
         }
+    }
+
+    ///
+    pub fn is_empty(&self) -> bool {
+        self.count == 0
     }
 }
 

@@ -36,7 +36,6 @@
 ## Tasks
 
 - Gameplay
-    - One cannon laser can exist at a time.
     - Alien deletion should increase the speed of the alien movement.
         - TODO: this needs tuning
     - Lasers should erode bunkers.
