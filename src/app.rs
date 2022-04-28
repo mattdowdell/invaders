@@ -101,7 +101,7 @@ impl App {
             }
         }
 
-        for i in lasers_to_delete.into_iter() {
+        for i in lasers_to_delete.into_iter().rev() {
             self.lasers.remove(i);
         }
     }
@@ -113,10 +113,20 @@ impl App {
             if let Some(score) = self.grid.dies(laser) {
                 self.score += score;
                 lasers_to_delete.push(i);
+                continue;
+            }
+
+            if let Some(score) = self.mystery_ship.dies(laser) {
+                self.score += score;
+                self.mystery_ship.hide();
+                lasers_to_delete.push(i);
             }
         }
 
-        for i in lasers_to_delete.into_iter() {
+        // go through in reverse order so we can delete multiple elements in one pass
+        // otherwise deleting causes all subsequent elements to move to the previous index
+        // and we delete the wrong one (or panic if there's none left)
+        for i in lasers_to_delete.into_iter().rev() {
             self.lasers.remove(i);
         }
     }

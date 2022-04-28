@@ -227,10 +227,26 @@ impl Area {
 
     ///
     pub fn overlaps(&self, other: Area) -> bool {
-        self.min_x <= other.min_x
-            && self.min_y <= other.min_y
-            && other.max_x <= self.max_x
-            && other.max_y <= self.max_y
+        let x_check = compare(self.min_x, other.min_x)
+            + compare(self.min_x, other.max_x)
+            + compare(self.max_x, other.min_x)
+            + compare(self.max_x, other.max_x);
+        let y_check = compare(self.min_y, other.min_y)
+            + compare(self.min_y, other.max_y)
+            + compare(self.max_y, other.min_y)
+            + compare(self.max_y, other.max_y);
+
+        (x_check != 4 && x_check != -4) && (y_check != 4 && y_check != -4)
+    }
+}
+
+fn compare(lhs: f64, rhs: f64) -> i8 {
+    if lhs < rhs {
+        -1
+    } else if lhs > rhs {
+        1
+    } else {
+        0
     }
 }
 
@@ -260,11 +276,48 @@ impl MysteryShip {
         self.origin_x > (0.0 - points::MYSTERY_SHIP_WIDTH)
     }
 
+    pub fn hide(&mut self) {
+        self.origin_x = 0.0 - points::MYSTERY_SHIP_WIDTH - 1.0;
+    }
+
     ///
     pub fn move_left(&mut self) {
         if self.is_visible() {
             self.origin_x -= points::MYSTERY_SHIP_MOVE;
         }
+    }
+
+    ///
+    pub fn dies(&mut self, laser: &Laser) -> Option<u32> {
+        if self.area().overlaps(laser.area()) {
+            let laser_min_x = laser.area().min_x;
+            let mystery_ship_min_x = self.area().min_x;
+
+            let offset = (laser_min_x - mystery_ship_min_x) as u8;
+
+            match offset {
+                0..=1 | 14..=15 => Some(50),
+                2..=3 | 12..=13 => Some(100),
+                4..=5 | 10..=11 => Some(150),
+                6..=9 => Some(200),
+                _ => panic!(
+                    "Unexpected mystery ship offset: {} ({}, {})",
+                    offset, laser_min_x, mystery_ship_min_x
+                ),
+            }
+        } else {
+            None
+        }
+    }
+
+    ///
+    pub fn area(&self) -> Area {
+        Area::new(
+            self.origin_x,
+            self.origin_y,
+            self.origin_x + points::MYSTERY_SHIP_WIDTH,
+            self.origin_y + points::MYSTERY_SHIP_HEIGHT,
+        )
     }
 
     //
