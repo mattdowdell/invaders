@@ -2,12 +2,7 @@
 
 use crate::assets::{Bunkers, Cannon, Grid, Laser, MysteryShip};
 
-// triggers the mystery ship every 2.5 mins with a 5ms tick
-// const MYSTERY_SHIP_INTERVAL_TICKS: u16 = 3_000;
-const MYSTERY_SHIP_INTERVAL_TICKS: u16 = 200;
 const ALIEN_COUNTER_DEFAULT: u8 = 5;
-const SHOT_RATELIMIT_MAX: u8 = 3;
-
 const DEFAULT_LIVES: u8 = 3;
 
 #[derive(Clone, Debug, PartialEq)]
@@ -20,19 +15,20 @@ pub struct App {
     pub cannon: Cannon,
     pub bunkers: Bunkers,
     pub mystery_ship: MysteryShip,
+    mystery_ship_interval: u16,
     mystery_ship_counter: u16,
     pub grid: Grid,
     pub lasers: Vec<Laser>,
     pub lives: u8,
     alien_counter: u8,
     alien_counter_max: u8,
-    laser_ratelimit: u8,
     count_threshold: usize,
+    max_cannon_lasers: usize,
 }
 
 impl App {
     ///
-    pub fn new() -> Self {
+    pub fn new(mystery_ship_interval: u16, max_cannon_lasers: u8) -> Self {
         let grid = Grid::new();
 
         Self {
@@ -44,14 +40,15 @@ impl App {
             cannon: Cannon::new_normal(),
             bunkers: Bunkers::new(),
             mystery_ship: MysteryShip::new(),
-            mystery_ship_counter: MYSTERY_SHIP_INTERVAL_TICKS,
+            mystery_ship_interval,
+            mystery_ship_counter: mystery_ship_interval,
             count_threshold: grid.count(),
             grid,
             lasers: Vec::new(),
             lives: DEFAULT_LIVES,
             alien_counter: ALIEN_COUNTER_DEFAULT,
             alien_counter_max: ALIEN_COUNTER_DEFAULT,
-            laser_ratelimit: 0,
+            max_cannon_lasers: max_cannon_lasers.into(),
         }
     }
 
@@ -70,11 +67,6 @@ impl App {
         self.check_lasers();
 
         self.check_threshold();
-
-        // decrement shot ratelimit
-        if self.laser_ratelimit > 0 {
-            self.laser_ratelimit -= 1;
-        }
     }
 
     fn move_mystery_ship(&mut self) {
@@ -83,7 +75,7 @@ impl App {
                 self.mystery_ship.move_left();
             } else {
                 self.mystery_ship.reset();
-                self.mystery_ship_counter = MYSTERY_SHIP_INTERVAL_TICKS;
+                self.mystery_ship_counter = self.mystery_ship_interval;
             }
         } else {
             self.mystery_ship_counter -= 1;
@@ -166,9 +158,8 @@ impl App {
 
     ///
     pub fn on_space(&mut self) {
-        if !self.is_paused() && self.laser_ratelimit == 0 {
+        if !self.is_paused() && self.lasers.len() < self.max_cannon_lasers {
             self.lasers.push(Laser::new(self.cannon.origin_x));
-            self.laser_ratelimit = SHOT_RATELIMIT_MAX;
         }
     }
 

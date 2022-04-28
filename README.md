@@ -44,10 +44,8 @@
         - TODO: add support for bidirectional lasers.
     - Up to 3 alien lasers may exist at a time.
     - Alien lasers that hit the cannon should remove a life and reset cannon to initial location.
-- CLI
-    - Make mystery ship interval configurable for demos.
-    - Maximum number of cannon lasers.
-    - Maximum number of alien lasers.
+    - Store hiscores in `${XDG_CACHE_HOME}/invaders/hiscores.toml` and load on start.
+    - Add start screen.
 - Handle `Ctrl+Z` (`SIGSTOP`/`SIGCONT`).
     - Probably worth handling `SIGINT` properly as well.
 

@@ -5,9 +5,12 @@ mod assets;
 mod points;
 mod ui;
 
+use std::env;
 use std::io;
 use std::time::{Duration, Instant};
+use std::path::PathBuf;
 
+use clap::Parser;
 use crossterm::{
     event::{self, Event, KeyCode, KeyModifiers},
     execute,
@@ -15,7 +18,29 @@ use crossterm::{
 };
 use tui::{backend::CrosstermBackend, Terminal};
 
+///
+#[derive(Parser, Debug)]
+struct Args {
+    /// The interval in ticks between appearances of the mystery ship.
+    #[clap(long, default_value_t = 200)]
+    mystery_ship_interval: u16,
+
+    /// The maximum number of cannon lasers that can be present.
+    #[clap(long, default_value_t = 1)]
+    max_cannon_lasers: u8,
+
+    /// The maximum number of invader lasers that can be present.
+    #[clap(long, default_value_t = 3)]
+    max_invader_lasers: u8,
+
+    /// The number of milliseconds per tick.
+    #[clap(long, default_value_t = 50)]
+    tick_length: u64,
+}
+
 fn main() -> Result<(), io::Error> {
+    let args = Args::parse();
+
     // setup terminal
     enable_raw_mode()?;
     let mut stdout = io::stdout();
@@ -23,8 +48,8 @@ fn main() -> Result<(), io::Error> {
     let backend = CrosstermBackend::new(stdout);
     let mut terminal = Terminal::new(backend)?;
 
-    let mut app = app::App::new();
-    let tick_rate = Duration::from_millis(50);
+    let mut app = app::App::new(args.mystery_ship_interval, args.max_cannon_lasers);
+    let tick_rate = Duration::from_millis(args.tick_length);
     let mut last_tick = Instant::now();
 
     loop {
@@ -75,4 +100,18 @@ fn main() -> Result<(), io::Error> {
     terminal.show_cursor()?;
 
     Ok(())
+}
+
+//
+fn xdg_cache_home() -> PathBuf {
+    match env::var_os("XDG_CACHE_HOME") {
+        Some(cache_home) => PathBuf::from(cache_home),
+        None => {
+            let mut home_dir = home::home_dir().expect("Unable to get home directory");
+            home_dir.push(".cache");
+
+            home_dir
+        }
+    }
+
 }
