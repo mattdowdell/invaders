@@ -1,6 +1,6 @@
 //!
 
-use crate::assets::{Bunkers, Cannon, Grid, Laser, MysteryShip};
+use crate::assets::{Bunkers, Cannon, InvaderGrid, Laser, MysteryShip};
 
 const ALIEN_COUNTER_DEFAULT: u8 = 5;
 const DEFAULT_LIVES: u8 = 3;
@@ -17,7 +17,7 @@ pub struct App {
     pub mystery_ship: MysteryShip,
     mystery_ship_interval: u16,
     mystery_ship_counter: u16,
-    pub grid: Grid,
+    pub grid: InvaderGrid,
     pub lasers: Vec<Laser>,
     pub lives: u8,
     alien_counter: u8,
@@ -29,7 +29,7 @@ pub struct App {
 impl App {
     ///
     pub fn new(mystery_ship_interval: u16, max_cannon_lasers: u8) -> Self {
-        let grid = Grid::new();
+        let grid = InvaderGrid::new();
 
         Self {
             score: 0,
@@ -59,15 +59,15 @@ impl App {
 
     ///
     pub fn on_tick(&mut self) {
-        self.move_mystery_ship();
+        self.mystery_ship_on_tick();
         self.move_grid();
         self.check_lasers();
 
-        self.move_lasers();
+        self.lasers_on_tick();
         self.check_lasers();
 
         if self.grid.is_empty() {
-            self.grid = Grid::new();
+            self.grid = InvaderGrid::new();
             self.count_threshold = self.grid.count();
             self.alien_counter_max = ALIEN_COUNTER_DEFAULT;
         } else {
@@ -75,10 +75,10 @@ impl App {
         }
     }
 
-    fn move_mystery_ship(&mut self) {
+    fn mystery_ship_on_tick(&mut self) {
         if self.mystery_ship_counter == 0 {
             if self.mystery_ship.is_visible() {
-                self.mystery_ship.move_left();
+                self.mystery_ship.on_tick();
             } else {
                 self.mystery_ship.reset();
                 self.mystery_ship_counter = self.mystery_ship_interval;
@@ -88,18 +88,18 @@ impl App {
         }
     }
 
-    fn move_lasers(&mut self) {
-        let mut lasers_to_delete = vec![];
+    fn lasers_on_tick(&mut self) {
+        let mut to_delete = vec![];
 
         for (i, laser) in self.lasers.iter_mut().enumerate() {
-            if laser.is_visible() {
-                laser.move_up();
-            } else {
-                lasers_to_delete.push(i);
+            laser.on_tick();
+
+            if !laser.is_visible() {
+                to_delete.push(i);
             }
         }
 
-        for i in lasers_to_delete.into_iter().rev() {
+        for i in to_delete.into_iter().rev() {
             self.lasers.remove(i);
         }
     }
@@ -114,7 +114,7 @@ impl App {
                 continue;
             }
 
-            if let Some(score) = self.mystery_ship.dies(laser) {
+            if let Some(score) = self.mystery_ship.collides_with(laser) {
                 self.score += score;
                 self.mystery_ship.hide();
                 lasers_to_delete.push(i);
@@ -165,7 +165,7 @@ impl App {
     ///
     pub fn on_space(&mut self) {
         if !self.is_paused() && self.lasers.len() < self.max_cannon_lasers {
-            self.lasers.push(Laser::new(self.cannon.origin_x));
+            self.lasers.push(Laser::new_cannon(self.cannon.origin_x));
         }
     }
 

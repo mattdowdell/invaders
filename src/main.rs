@@ -7,8 +7,8 @@ mod ui;
 
 use std::env;
 use std::io;
-use std::time::{Duration, Instant};
 use std::path::PathBuf;
+use std::time::{Duration, Instant};
 
 use clap::Parser;
 use crossterm::{
@@ -113,5 +113,4 @@ fn xdg_cache_home() -> PathBuf {
             home_dir
         }
     }
-
 }
