@@ -63,6 +63,10 @@ mod test {
             (((0.0, 0.0), (3.0, 3.0)), ((1.0, 2.0), (2.0, 4.0))),
             (((1.0, 0.0), (4.0, 3.0)), ((0.0, 1.0), (2.0, 2.0))),
             (((0.0, 1.0), (3.0, 4.0)), ((1.0, 0.0), (2.0, 2.0))),
+            // overlap through on bottom edge
+            (((0.0, 0.0), (3.0, 1.0)), ((1.0, 0.0), (2.0, 2.0))),
+            (((0.0, 0.0), (3.0, 1.0)), ((0.0, 0.0), (1.0, 2.0))),
+            (((0.0, 0.0), (3.0, 1.0)), ((2.0, 0.0), (3.0, 2.0))),
         ];
 
         for (a, b) in coordinates.into_iter() {
@@ -74,6 +78,13 @@ mod test {
                 "{:?} does not overlap {:?}",
                 area_a,
                 area_b
+            );
+
+            assert!(
+                area_b.overlaps(area_a),
+                "{:?} does not overlap {:?}",
+                area_b,
+                area_a
             );
         }
     }
@@ -110,6 +121,13 @@ mod test {
                 "{:?} overlaps {:?}",
                 area_a,
                 area_b
+            );
+
+            assert!(
+                !area_b.overlaps(area_a),
+                "{:?} overlaps {:?}",
+                area_b,
+                area_a
             );
         }
     }

@@ -12,6 +12,6 @@ use area::Area;
 pub use bunker::{Bunker, Bunkers};
 pub use cannon::Cannon;
 pub use invaders::{InvaderGrid, InvaderType};
-pub use laser::Laser;
+pub use laser::{Laser, LaserFrom};
 pub use mystery_ship::MysteryShip;
 pub use words::Words;

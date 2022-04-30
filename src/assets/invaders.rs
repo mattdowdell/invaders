@@ -5,7 +5,7 @@ use tui::widgets::canvas::{Painter, Shape};
 
 use crate::points;
 
-use super::{Area, Laser};
+use super::{Area, Cannon, Laser};
 
 const INVADERS_PER_ROW: usize = 8;
 
@@ -78,16 +78,28 @@ impl InvaderGrid {
         }
     }
 
-    pub fn dies(&mut self, laser: &Laser) -> Option<u32> {
+    pub fn collides_with_laser(&mut self, laser: &Laser) -> Option<u32> {
         if self.area().overlaps(laser.area()) {
             for row in self.rows.iter_mut() {
-                if let Some(score) = row.dies(laser) {
+                if let Some(score) = row.collides_with_laser(laser) {
                     return Some(score);
                 }
             }
         }
 
         None
+    }
+
+    pub fn collides_with_cannon(&self, cannon: &Cannon) -> bool {
+        if self.area().overlaps(cannon.area()) {
+            for row in self.rows.iter() {
+                if row.collides_with_cannon(cannon) {
+                    return true;
+                }
+            }
+        }
+
+        false
     }
 
     ///
@@ -207,11 +219,11 @@ impl InvaderRow {
     }
 
     ///
-    pub fn dies(&mut self, laser: &Laser) -> Option<u32> {
+    pub fn collides_with_laser(&mut self, laser: &Laser) -> Option<u32> {
         if self.area().overlaps(laser.area()) {
             for (i, invader) in self.invaders.iter_mut().enumerate() {
                 if let Some(invader) = invader {
-                    if let Some(score) = invader.dies(laser) {
+                    if let Some(score) = invader.collides_with_laser(laser) {
                         self.delete(i);
                         return Some(score);
                     }
@@ -220,6 +232,19 @@ impl InvaderRow {
         }
 
         None
+    }
+
+    ///
+    pub fn collides_with_cannon(&self, cannon: &Cannon) -> bool {
+        if self.area().overlaps(cannon.area()) {
+            for invader in self.invaders.iter().flatten() {
+                if invader.collides_with_cannon(cannon) {
+                    return true;
+                }
+            }
+        }
+
+        false
     }
 
     ///
@@ -332,12 +357,17 @@ impl Invader {
     }
 
     ///
-    pub fn dies(&self, laser: &Laser) -> Option<u32> {
+    pub fn collides_with_laser(&self, laser: &Laser) -> Option<u32> {
         if self.area().overlaps(laser.area()) {
             Some(self.invader_type.score())
         } else {
             None
         }
+    }
+
+    ///
+    pub fn collides_with_cannon(&self, cannon: &Cannon) -> bool {
+        self.area().overlaps(cannon.area())
     }
 
     ///

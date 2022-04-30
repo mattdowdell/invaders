@@ -1,6 +1,6 @@
 //!
 
-use crate::assets::{Bunkers, Cannon, InvaderGrid, Laser, MysteryShip};
+use crate::assets::{Bunkers, Cannon, InvaderGrid, Laser, LaserFrom, MysteryShip};
 
 const ALIEN_COUNTER_DEFAULT: u8 = 5;
 const DEFAULT_LIVES: u8 = 3;
@@ -9,6 +9,7 @@ const MAX_LEVEL: u8 = 6;
 #[derive(Clone, Debug, PartialEq)]
 pub struct App {
     pub started: bool,
+    pub game_over: bool,
     pub score: u32,
     pub hiscore: u32,
     level: u8,
@@ -37,6 +38,7 @@ impl App {
 
         Self {
             started: false,
+            game_over: false,
             score: 0,
             hiscore: 0,
             level,
@@ -64,22 +66,47 @@ impl App {
     }
 
     ///
-    pub fn is_paused(&self) -> bool {
-        self.paused || self.show_help
+    pub fn reset_game(&mut self) {
+        self.game_over = false;
+        self.lasers.clear();
+        self.level = 0;
+        self.score = 0;
+        self.lives = DEFAULT_LIVES;
+        self.bunkers = Bunkers::new();
+        self.mystery_ship.hide();
+        self.mystery_ship_counter = self.mystery_ship_interval;
+
+        self.reset_grid();
+    }
+
+    ///
+    pub fn reset_grid(&mut self) {
+        self.grid = InvaderGrid::new(self.level);
+        self.count_threshold = self.grid.count();
+        self.alien_counter_max = ALIEN_COUNTER_DEFAULT;
+    }
+
+    ///
+    pub fn playing(&self) -> bool {
+        self.started && !self.game_over && !self.paused && !self.show_help
     }
 
     ///
     pub fn on_tick(&mut self) {
-        if !self.started {
+        if !self.playing() {
             return;
         }
 
         self.mystery_ship_on_tick();
         self.move_grid();
-        self.check_lasers();
+        self.check_collisions();
+
+        if !self.playing() {
+            return;
+        }
 
         self.lasers_on_tick();
-        self.check_lasers();
+        self.check_collisions();
 
         if self.grid.is_empty() {
             if self.level < MAX_LEVEL {
@@ -88,9 +115,7 @@ impl App {
                 self.level = 0;
             }
 
-            self.grid = InvaderGrid::new(self.level);
-            self.count_threshold = self.grid.count();
-            self.alien_counter_max = ALIEN_COUNTER_DEFAULT;
+            self.reset_grid();
         } else {
             self.check_threshold();
         }
@@ -125,21 +150,42 @@ impl App {
         }
     }
 
-    fn check_lasers(&mut self) {
+    fn check_collisions(&mut self) {
         let mut lasers_to_delete = vec![];
 
         for (i, laser) in self.lasers.iter().enumerate() {
-            if let Some(score) = self.grid.dies(laser) {
-                self.score += score;
-                lasers_to_delete.push(i);
-                continue;
-            }
+            match laser.from {
+                LaserFrom::Cannon => {
+                    if let Some(score) = self.grid.collides_with_laser(laser) {
+                        self.score += score;
+                        lasers_to_delete.push(i);
+                        continue;
+                    }
 
-            if let Some(score) = self.mystery_ship.collides_with(laser) {
-                self.score += score;
-                self.mystery_ship.hide();
-                lasers_to_delete.push(i);
+                    if let Some(score) = self.mystery_ship.collides_with(laser) {
+                        self.score += score;
+                        self.mystery_ship.hide();
+                        lasers_to_delete.push(i);
+                    }
+                }
+                LaserFrom::Invader => {
+                    if self.cannon.collides_with_laser(laser) {
+                        self.lives -= 1;
+
+                        if self.lives == 0 {
+                            self.game_over;
+                            return;
+                        }
+
+                        self.cannon.reset();
+                    }
+                }
             }
+        }
+
+        if self.grid.collides_with_cannon(&self.cannon) {
+            self.game_over = true;
+            return;
         }
 
         // go through in reverse order so we can delete multiple elements in one pass
@@ -171,14 +217,14 @@ impl App {
 
     ///
     pub fn on_left(&mut self) {
-        if self.started && !self.is_paused() {
+        if self.playing() {
             self.cannon.move_left();
         }
     }
 
     ///
     pub fn on_right(&mut self) {
-        if self.started && !self.is_paused() {
+        if self.playing() {
             self.cannon.move_right();
         }
     }
@@ -187,21 +233,23 @@ impl App {
     pub fn on_space(&mut self) {
         if !self.started {
             self.start()
-        } else if !self.is_paused() && self.lasers.len() < self.max_cannon_lasers {
+        } else if self.game_over {
+            self.reset_game();
+        } else if self.playing() && self.lasers.len() < self.max_cannon_lasers {
             self.lasers.push(Laser::new_cannon(self.cannon.origin_x));
         }
     }
 
     ///
     pub fn on_h(&mut self) {
-        if self.started && !self.paused {
+        if self.playing() || self.show_help {
             self.show_help ^= true;
         }
     }
 
     ///
     pub fn on_p(&mut self) {
-        if self.started && !self.show_help {
+        if self.playing() || self.paused {
             self.paused ^= true;
         }
     }

@@ -37,11 +37,8 @@
     - Aliens should be able to fire lasers.
         - TODO: add support for bidirectional lasers.
     - Up to 3 alien lasers may exist at a time.
-    - Alien lasers that hit the cannon should remove a life and reset cannon to initial location.
-        - If alien lasers hit the cannon with no lives remaining, the game should end.
-    - Aliens that collide with the connon should end the game.
     - Store hiscores in `${XDG_CACHE_HOME}/invaders/hiscores.toml` and load on start.
-    - Add game over screen.
+    - If alien has fallen off the bottom of screen, end the game.
 - Handle `Ctrl+Z` (`SIGSTOP`/`SIGCONT`).
     - Probably worth handling `SIGINT` properly as well.
 

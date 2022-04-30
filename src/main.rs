@@ -94,7 +94,7 @@ fn main() -> Result<(), io::Error> {
         }
 
         if last_tick.elapsed() >= tick_rate {
-            if !app.is_paused() {
+            if app.playing() {
                 app.on_tick();
             }
 

@@ -5,6 +5,8 @@ use tui::widgets::canvas::{Painter, Shape};
 
 use crate::points;
 
+use super::{Area, Laser};
+
 ///
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub struct Cannon {
@@ -49,12 +51,33 @@ impl Cannon {
         }
     }
 
+    ///
+    pub fn reset(&mut self) {
+        self.origin_x = points::CANNON_INITIAL_X;
+        self.origin_y = points::CANNON_INITIAL_Y;
+    }
+
     //
     fn data(&self) -> &'static [(f64, f64)] {
         match self.cannon_type {
             CannonType::Normal => &points::CANNON,
             CannonType::Small => &points::CANNON_SMALL,
         }
+    }
+
+    ///
+    pub fn collides_with_laser(&self, laser: &Laser) -> bool {
+        self.area().overlaps(laser.area())
+    }
+
+    ///
+    pub fn area(&self) -> Area {
+        Area::new(
+            self.origin_x,
+            self.origin_y,
+            self.origin_x + points::CANNON_WIDTH,
+            self.origin_y + points::CANNON_HEIGHT,
+        )
     }
 }
 

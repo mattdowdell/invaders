@@ -13,18 +13,25 @@ use crate::assets;
 use super::{game, util};
 
 pub fn draw_start_screen<B: Backend>(f: &mut Frame<B>) {
+    draw_screen(f, assets::Words::space_invaders());
+}
+
+pub fn draw_game_over_screen<B: Backend>(f: &mut Frame<B>) {
+    draw_screen(f, assets::Words::game_over());
+}
+
+pub fn draw_screen<B: Backend>(f: &mut Frame<B>, words: assets::Words) {
     let area = util::app_area(f.size());
 
     draw_outer(f, area);
 
     let inner = get_inner(area);
-    let logo = assets::Words::space_invaders();
 
     let chunks = Layout::default()
         .direction(Direction::Vertical)
         .constraints([
             Constraint::Length(4),
-            Constraint::Length(logo.height() as u16 / super::VERTICAL_DOTS_PER_CHAR),
+            Constraint::Length(words.height() as u16 / super::VERTICAL_DOTS_PER_CHAR),
             Constraint::Length(4),
             Constraint::Length(1),
             Constraint::Length(3),
@@ -33,7 +40,7 @@ pub fn draw_start_screen<B: Backend>(f: &mut Frame<B>) {
         ])
         .split(inner);
 
-    draw_logo(f, chunks[1], logo);
+    draw_words(f, chunks[1], words);
     draw_start_text(f, chunks[3]);
     game::draw_help_popup(f, chunks[5]);
 }
@@ -67,10 +74,10 @@ fn get_inner(outer: Rect) -> Rect {
     chunks[index]
 }
 
-fn draw_logo<B: Backend>(f: &mut Frame<B>, area: Rect, logo: assets::Words) {
+fn draw_words<B: Backend>(f: &mut Frame<B>, area: Rect, words: assets::Words) {
     let (constraints, index) = util::center(
         area.width,
-        logo.width() as u16 / super::HORIZONTAL_DOTS_PER_CHAR,
+        words.width() as u16 / super::HORIZONTAL_DOTS_PER_CHAR,
     );
     let chunks = Layout::default()
         .direction(Direction::Horizontal)
@@ -79,10 +86,10 @@ fn draw_logo<B: Backend>(f: &mut Frame<B>, area: Rect, logo: assets::Words) {
 
     let widget = Canvas::default()
         .block(Block::default())
-        .x_bounds([0.0, logo.width()])
-        .y_bounds([0.0, logo.height()])
+        .x_bounds([0.0, words.width()])
+        .y_bounds([0.0, words.height()])
         .paint(|ctx| {
-            ctx.draw(&logo);
+            ctx.draw(&words);
         });
 
     f.render_widget(widget, chunks[index]);

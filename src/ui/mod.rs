@@ -39,6 +39,8 @@ pub fn draw<B: Backend>(f: &mut Frame<B>, app: &App) {
 
     if !app.started {
         start::draw_start_screen(f);
+    } else if app.game_over {
+        start::draw_game_over_screen(f);
     } else {
         game::draw_game_screen(f, app);
     }
