@@ -90,6 +90,7 @@ impl InvaderGrid {
         None
     }
 
+    ///
     pub fn collides_with_cannon(&self, cannon: &Cannon) -> bool {
         if self.area().overlaps(cannon.area()) {
             for row in self.rows.iter() {
@@ -100,6 +101,21 @@ impl InvaderGrid {
         }
 
         false
+    }
+
+    ///
+    pub fn is_visible(&self) -> bool {
+        if self.origin_y > 0.0 {
+            return true;
+        }
+
+        for row in self.rows.iter() {
+            if !row.is_visible() {
+                return false
+            }
+        }
+
+        true
     }
 
     ///
@@ -275,6 +291,11 @@ impl InvaderRow {
     ///
     pub fn is_empty(&self) -> bool {
         self.count == 0
+    }
+
+    ///
+    pub fn is_visible(&self) -> bool {
+        self.origin_y > 0.0 || self.is_empty()
     }
 }
 

@@ -151,6 +151,16 @@ impl App {
     }
 
     fn check_collisions(&mut self) {
+        if !self.grid.is_visible() {
+            self.game_over = true;
+            return;
+        }
+
+        if self.grid.collides_with_cannon(&self.cannon) {
+            self.game_over = true;
+            return;
+        }
+
         let mut lasers_to_delete = vec![];
 
         for (i, laser) in self.lasers.iter().enumerate() {
@@ -181,11 +191,6 @@ impl App {
                     }
                 }
             }
-        }
-
-        if self.grid.collides_with_cannon(&self.cannon) {
-            self.game_over = true;
-            return;
         }
 
         // go through in reverse order so we can delete multiple elements in one pass
