@@ -4,11 +4,14 @@ use crate::assets::{Bunkers, Cannon, InvaderGrid, Laser, MysteryShip};
 
 const ALIEN_COUNTER_DEFAULT: u8 = 5;
 const DEFAULT_LIVES: u8 = 3;
+const MAX_LEVEL: u8 = 6;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct App {
+    pub started: bool,
     pub score: u32,
     pub hiscore: u32,
+    level: u8,
     pub show_help: bool,
     pub paused: bool,
     pub should_quit: bool,
@@ -28,12 +31,15 @@ pub struct App {
 
 impl App {
     ///
-    pub fn new(mystery_ship_interval: u16, max_cannon_lasers: u8) -> Self {
-        let grid = InvaderGrid::new();
+    pub fn new(mystery_ship_interval: u16, max_cannon_lasers: u8, level: u8) -> Self {
+        let level = if level > MAX_LEVEL { MAX_LEVEL } else { level };
+        let grid = InvaderGrid::new(level);
 
         Self {
+            started: false,
             score: 0,
             hiscore: 0,
+            level,
             show_help: false,
             paused: false,
             should_quit: false,
@@ -53,12 +59,21 @@ impl App {
     }
 
     ///
+    pub fn start(&mut self) {
+        self.started = true;
+    }
+
+    ///
     pub fn is_paused(&self) -> bool {
         self.paused || self.show_help
     }
 
     ///
     pub fn on_tick(&mut self) {
+        if !self.started {
+            return;
+        }
+
         self.mystery_ship_on_tick();
         self.move_grid();
         self.check_lasers();
@@ -67,7 +82,13 @@ impl App {
         self.check_lasers();
 
         if self.grid.is_empty() {
-            self.grid = InvaderGrid::new();
+            if self.level < MAX_LEVEL {
+                self.level += 1;
+            } else {
+                self.level = 0;
+            }
+
+            self.grid = InvaderGrid::new(self.level);
             self.count_threshold = self.grid.count();
             self.alien_counter_max = ALIEN_COUNTER_DEFAULT;
         } else {
@@ -150,35 +171,37 @@ impl App {
 
     ///
     pub fn on_left(&mut self) {
-        if !self.is_paused() {
+        if self.started && !self.is_paused() {
             self.cannon.move_left();
         }
     }
 
     ///
     pub fn on_right(&mut self) {
-        if !self.is_paused() {
+        if self.started && !self.is_paused() {
             self.cannon.move_right();
         }
     }
 
     ///
     pub fn on_space(&mut self) {
-        if !self.is_paused() && self.lasers.len() < self.max_cannon_lasers {
+        if !self.started {
+            self.start()
+        } else if !self.is_paused() && self.lasers.len() < self.max_cannon_lasers {
             self.lasers.push(Laser::new_cannon(self.cannon.origin_x));
         }
     }
 
     ///
     pub fn on_h(&mut self) {
-        if !self.paused {
+        if self.started && !self.paused {
             self.show_help ^= true;
         }
     }
 
     ///
     pub fn on_p(&mut self) {
-        if !self.show_help {
+        if self.started && !self.show_help {
             self.paused ^= true;
         }
     }

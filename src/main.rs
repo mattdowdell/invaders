@@ -36,6 +36,10 @@ struct Args {
     /// The number of milliseconds per tick.
     #[clap(long, default_value_t = 50)]
     tick_length: u64,
+
+    /// The level to start at.
+    #[clap(long, default_value_t = 0)]
+    start_level: u8,
 }
 
 fn main() -> Result<(), io::Error> {
@@ -48,7 +52,11 @@ fn main() -> Result<(), io::Error> {
     let backend = CrosstermBackend::new(stdout);
     let mut terminal = Terminal::new(backend)?;
 
-    let mut app = app::App::new(args.mystery_ship_interval, args.max_cannon_lasers);
+    let mut app = app::App::new(
+        args.mystery_ship_interval,
+        args.max_cannon_lasers,
+        args.start_level,
+    );
     let tick_rate = Duration::from_millis(args.tick_length);
     let mut last_tick = Instant::now();
 

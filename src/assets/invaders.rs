@@ -20,7 +20,8 @@ pub struct InvaderGrid {
 
 impl InvaderGrid {
     ///
-    pub fn new() -> Self {
+    pub fn new(level: u8) -> Self {
+        let level_offset = level as f64 * points::INVADER_MOVE_Y * -1.0;
         let mut rows = Vec::new();
         let invader_types = vec![
             InvaderType::Octopus,
@@ -34,7 +35,7 @@ impl InvaderGrid {
             let row = InvaderRow::new(
                 invader_type,
                 points::GRID_INITIAL_X,
-                points::GRID_INITIAL_Y + (points::ROW_HEIGHT * (i as f64)),
+                points::GRID_INITIAL_Y + (points::ROW_HEIGHT * (i as f64)) + level_offset,
             );
             rows.push(row);
         }
@@ -42,7 +43,7 @@ impl InvaderGrid {
         Self {
             rows,
             origin_x: points::GRID_INITIAL_X,
-            origin_y: points::GRID_INITIAL_Y,
+            origin_y: points::GRID_INITIAL_Y + level_offset,
             direction: InvaderDirection::default(),
         }
     }

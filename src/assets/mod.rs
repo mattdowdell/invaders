@@ -3,13 +3,15 @@
 mod area;
 mod bunker;
 mod cannon;
-mod invader;
+mod invaders;
 mod laser;
 mod mystery_ship;
+mod words;
 
 use area::Area;
 pub use bunker::{Bunker, Bunkers};
 pub use cannon::Cannon;
-pub use invader::{InvaderGrid, InvaderType};
+pub use invaders::{InvaderGrid, InvaderType};
 pub use laser::Laser;
 pub use mystery_ship::MysteryShip;
+pub use words::Words;

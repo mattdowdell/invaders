@@ -1,10 +1,7 @@
 # invaders
 
-![msrv 1.60]
-
-[msrv 1.60]: https://img.shields.io/badge/msrv-1.60-blue
-
 ## UI Design
+
 
 ```
 +-Space Invaders---------------------------------------------------------------+
@@ -36,15 +33,15 @@
 ## Tasks
 
 - Gameplay
-    - Alien deletion should increase the speed of the alien movement.
-        - TODO: this needs tuning
     - Lasers should erode bunkers.
     - Aliens should be able to fire lasers.
         - TODO: add support for bidirectional lasers.
     - Up to 3 alien lasers may exist at a time.
     - Alien lasers that hit the cannon should remove a life and reset cannon to initial location.
+        - If alien lasers hit the cannon with no lives remaining, the game should end.
+    - Aliens that collide with the connon should end the game.
     - Store hiscores in `${XDG_CACHE_HOME}/invaders/hiscores.toml` and load on start.
-    - Add start screen.
+    - Add game over screen.
 - Handle `Ctrl+Z` (`SIGSTOP`/`SIGCONT`).
     - Probably worth handling `SIGINT` properly as well.
 
@@ -59,6 +56,8 @@ https://spaceinvaders.fandom.com/wiki/UFO
 > If a player hits [the mystery ship], they will receive a random number of either 50, 100, 150, or 200 points. However, if they perform the secret of firing 22 shots, then hitting it on the 23rd shot, then on the 15th shot thereafter, they will receive 300 points every time.
 
 ## Build
+
+*Developed using Rust 1.60, but should be compatible with Rust 1.56 and later.*
 
 Using [`cargo`](https://doc.rust-lang.org/cargo/getting-started/installation.html):
 
