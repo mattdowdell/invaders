@@ -331,7 +331,7 @@ impl InvaderRow {
 
     ///
     pub fn get(&self, index: usize) -> &Option<Invader> {
-        self.invaders.get(index).unwrap()
+        self.invaders.get(index).unwrap_or(&None)
     }
 }
 
