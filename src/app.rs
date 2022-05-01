@@ -1,13 +1,15 @@
 //!
 
+use rand::rngs::ThreadRng;
+
 use crate::assets::{Bunkers, Cannon, InvaderGrid, Laser, MysteryShip};
 
-const INVADER_LASER_COUNTER_DEFAULT: u8 = 6;
+const INVADER_LASER_COUNTER_DEFAULT: u8 = 8;
 const ALIEN_COUNTER_DEFAULT: u8 = 5;
 const DEFAULT_LIVES: u8 = 3;
 const MAX_LEVEL: u8 = 6;
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug)]
 pub struct App {
     pub started: bool,
     pub game_over: bool,
@@ -32,6 +34,7 @@ pub struct App {
     count_threshold: usize,
     max_cannon_lasers: usize,
     max_invader_lasers: usize,
+    rng: ThreadRng,
 }
 
 impl App {
@@ -69,6 +72,7 @@ impl App {
             invader_laser_counter: INVADER_LASER_COUNTER_DEFAULT,
             max_cannon_lasers: max_cannon_lasers.into(),
             max_invader_lasers: max_invader_lasers.into(),
+            rng: rand::thread_rng(),
         }
     }
 
@@ -88,6 +92,7 @@ impl App {
         self.bunkers = Bunkers::new();
         self.mystery_ship.hide();
         self.mystery_ship_counter = self.mystery_ship_interval;
+        self.cannon.reset();
 
         self.reset_grid();
     }
@@ -214,12 +219,12 @@ impl App {
 
         for (i, laser) in self.invader_lasers.iter().enumerate() {
             if self.cannon.collides_with_laser(laser) {
-                self.lives -= 1;
-
                 if self.lives == 0 {
                     self.game_over = true;
                     return;
                 }
+
+                self.lives -= 1;
 
                 self.cannon.reset();
                 invader_lasers_to_delete.push(i);
@@ -246,8 +251,10 @@ impl App {
             if self.invader_laser_counter == 0
                 && self.invader_lasers.len() < self.max_invader_lasers
             {
-                self.invader_lasers.push(self.grid.laser());
-                self.invader_laser_counter = INVADER_LASER_COUNTER_DEFAULT;
+                if let Some(laser) = self.grid.laser(&mut self.rng) {
+                    self.invader_lasers.push(laser);
+                    self.invader_laser_counter = INVADER_LASER_COUNTER_DEFAULT;
+                }
             }
         } else {
             self.alien_counter -= 1;
@@ -310,6 +317,11 @@ impl App {
 
     ///
     pub fn on_ctrl_c(&mut self) {
+        self.should_quit = true;
+    }
+
+    ///
+    pub fn on_esc(&mut self) {
         self.should_quit = true;
     }
 }

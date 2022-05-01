@@ -1,6 +1,9 @@
 //!
 
-use rand::distributions::{Distribution, Uniform};
+use rand::{
+    Rng,
+    distributions::{Distribution, Uniform},
+};
 use tui::style::Color;
 use tui::widgets::canvas::{Painter, Shape};
 
@@ -164,31 +167,24 @@ impl InvaderGrid {
     }
 
     ///
-    pub fn laser(&self) -> Laser {
+    pub fn laser<R: Rng + Sized>(&self, rng: &mut R) -> Option<Laser> {
         if self.is_empty() {
-            panic!("cannot create laser from empty grid");
+            return None
         }
 
-        let mut rng = rand::thread_rng();
-        let mut column = self.between.sample(&mut rng);
+        let column = self.between.sample(rng);
 
-        loop {
-            for row in self.rows.iter() {
-                if row.is_empty() {
-                    continue;
-                }
-
-                if let Some(invader) = row.get(column) {
-                    return Laser::new_invader(invader.left, invader.bottom, invader.invader_type);
-                }
+        for row in self.rows.iter() {
+            if row.is_empty() {
+                continue;
             }
 
-            if column < INVADERS_PER_ROW {
-                column += 1;
-            } else {
-                column = 0;
+            if let Some(invader) = row.get(column) {
+                return Some(Laser::new_invader(invader.left, invader.bottom, invader.invader_type));
             }
         }
+
+        None
     }
 }
 

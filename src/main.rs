@@ -86,6 +86,7 @@ fn main() -> Result<(), io::Error> {
                         KeyCode::Char(' ') => app.on_space(),
                         KeyCode::Left => app.on_left(),
                         KeyCode::Right => app.on_right(),
+                        KeyCode::Esc => app.on_esc(),
                         _ => {}
                     },
                     _ => {}
