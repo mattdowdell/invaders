@@ -51,25 +51,24 @@ cargo build --release
 Build artefacts will be `target/debug/invaders` or `target/release/invaders` for debug and release
 builds respectively.
 
-### Releases
-
-MacOS (on MacOS):
+Release builds can be created using `make` and output `invaders-<target>.tar.gz` in the root of the
+repository, where `target` is the architecture and OS being built upon:
 
 ```sh
-cargo build --release --target x86_64-apple-darwin
-tar -C ./target/x86_64-apple-darwin/release/ -cvzf invaders-x86_64-apple-darwin.tar.gz invaders
-```
+# local build
+make build
 
-Linux (using Docker):
+# linux build (using docker)
+make build-docker
 
-```
-# TODO
+# clean release artifacts
+make clean
 ```
 
 ## Tasks
 
 - Gameplay
-    - Lasers should erase bunkers when coming into contact with them.
+    - Invaders should erase bunkers when coming into contact with them.
     - Add support for hiscores.
         - Store hiscores in `${XDG_CACHE_HOME}/invaders/hiscores.toml`
             - Commented-out helper function in `main.rs`.
