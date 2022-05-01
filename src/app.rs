@@ -241,7 +241,7 @@ impl App {
         } else if self.game_over {
             self.reset_game();
         } else if self.playing() && self.lasers.len() < self.max_cannon_lasers {
-            self.lasers.push(Laser::new_cannon(self.cannon.origin_x));
+            self.lasers.push(Laser::new_cannon(self.cannon.left));
         }
     }
 

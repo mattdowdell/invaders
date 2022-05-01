@@ -12,7 +12,6 @@ use tui::{
 
 use crate::app::App;
 use crate::assets;
-use crate::points;
 
 use super::util;
 
@@ -25,7 +24,7 @@ pub fn draw_game_screen<B: Backend>(f: &mut Frame<B>, app: &App) {
             Constraint::Length(super::ROW_HEIGHT),
             Constraint::Length(super::ROW_HEIGHT),
             Constraint::Length(super::GAME_HEIGHT),
-            Constraint::Length(super::ROW_HEIGHT),
+            Constraint::Length(super::DOUBLE_ROW_HEIGHT),
             Constraint::Min(0),
         ])
         .split(area);
@@ -130,8 +129,7 @@ fn draw_lives<B: Backend>(f: &mut Frame<B>, area: Rect, lives: u8) {
         .y_bounds([0.0, canvas_height as f64])
         .paint(|ctx| {
             for i in 1..=lives {
-                let x_offset = (i - 1) as f64 * (points::CANNON_SMALL_WIDTH + 4.0);
-                ctx.draw(&assets::Cannon::new_small(x_offset as f64));
+                ctx.draw(&assets::Cannon::new_life(i));
             }
         });
 

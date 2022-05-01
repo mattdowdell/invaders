@@ -7,7 +7,7 @@ pub mod letters;
 mod mystery_ship;
 
 pub use bunker::BUNKER;
-pub use cannon::{CANNON, CANNON_SMALL};
+pub use cannon::CANNON;
 pub use invaders::{CRAB, CRAB_ALT, OCTOPUS, OCTOPUS_ALT, SQUID, SQUID_ALT};
 pub use mystery_ship::MYSTERY_SHIP;
 
@@ -16,7 +16,6 @@ pub const GAME_HEIGHT: f64 = 132.0;
 
 pub const CANNON_WIDTH: f64 = 15.0;
 pub const CANNON_HEIGHT: f64 = 8.0;
-pub const CANNON_SMALL_WIDTH: f64 = 8.0;
 
 pub const BUNKER_WIDTH: f64 = 20.0;
 

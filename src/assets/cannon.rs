@@ -10,9 +10,8 @@ use super::{Area, Laser};
 ///
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub struct Cannon {
-    pub origin_x: f64,
-    origin_y: f64,
-    cannon_type: CannonType,
+    pub left: f64,
+    bottom: f64,
     color: Color,
 }
 
@@ -20,49 +19,41 @@ impl Cannon {
     ///
     pub fn new_normal() -> Self {
         Self {
-            origin_x: points::CANNON_INITIAL_X,
-            origin_y: points::CANNON_INITIAL_Y,
-            cannon_type: CannonType::Normal,
+            left: points::CANNON_INITIAL_X,
+            bottom: points::CANNON_INITIAL_Y,
             color: Color::Green,
         }
     }
 
     ///
-    pub fn new_small(x_offset: f64) -> Self {
+    pub fn new_life(index: u8) -> Self {
+        let x_offset = (index - 1) as f64 * (points::CANNON_WIDTH + 4.0);
+
         Self {
-            origin_x: points::CANNON_INITIAL_X + x_offset,
-            origin_y: points::CANNON_INITIAL_Y,
-            cannon_type: CannonType::Small,
+            left: points::CANNON_INITIAL_X + x_offset,
+            bottom: points::CANNON_INITIAL_Y,
             color: Color::Green,
         }
     }
 
     ///
     pub fn move_left(&mut self) {
-        if self.origin_x > 1.0 {
-            self.origin_x -= points::CANNON_MOVE;
+        if self.left > 1.0 {
+            self.left -= points::CANNON_MOVE;
         }
     }
 
     ///
     pub fn move_right(&mut self) {
-        if self.origin_x < (points::GAME_WIDTH - points::CANNON_WIDTH) {
-            self.origin_x += points::CANNON_MOVE;
+        if self.left < (points::GAME_WIDTH - points::CANNON_WIDTH) {
+            self.left += points::CANNON_MOVE;
         }
     }
 
     ///
     pub fn reset(&mut self) {
-        self.origin_x = points::CANNON_INITIAL_X;
-        self.origin_y = points::CANNON_INITIAL_Y;
-    }
-
-    //
-    fn data(&self) -> &'static [(f64, f64)] {
-        match self.cannon_type {
-            CannonType::Normal => &points::CANNON,
-            CannonType::Small => &points::CANNON_SMALL,
-        }
+        self.left = points::CANNON_INITIAL_X;
+        self.bottom = points::CANNON_INITIAL_Y;
     }
 
     ///
@@ -73,30 +64,23 @@ impl Cannon {
     ///
     pub fn area(&self) -> Area {
         Area::new(
-            self.origin_x,
-            self.origin_y,
-            self.origin_x + points::CANNON_WIDTH,
-            self.origin_y + points::CANNON_HEIGHT,
+            self.left,
+            self.bottom,
+            self.left + points::CANNON_WIDTH,
+            self.bottom + points::CANNON_HEIGHT,
         )
     }
 }
 
 impl Shape for Cannon {
     fn draw(&self, painter: &mut Painter) {
-        for (x, y) in self.data() {
-            let x = x + self.origin_x;
-            let y = y + self.origin_y;
+        for (x, y) in &points::CANNON {
+            let x = x + self.left;
+            let y = y + self.bottom;
 
             if let Some((x, y)) = painter.get_point(x, y) {
                 painter.paint(x, y, self.color);
             }
         }
     }
-}
-
-///
-#[derive(Copy, Clone, Debug, PartialEq)]
-enum CannonType {
-    Normal,
-    Small,
 }

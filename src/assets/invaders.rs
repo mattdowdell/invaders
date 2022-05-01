@@ -13,8 +13,8 @@ const INVADERS_PER_ROW: usize = 8;
 #[derive(Clone, Debug, PartialEq)]
 pub struct InvaderGrid {
     rows: Vec<InvaderRow>,
-    origin_x: f64,
-    origin_y: f64,
+    left: f64,
+    bottom: f64,
     direction: InvaderDirection,
 }
 
@@ -42,8 +42,8 @@ impl InvaderGrid {
 
         Self {
             rows,
-            origin_x: points::GRID_INITIAL_X,
-            origin_y: points::GRID_INITIAL_Y + level_offset,
+            left: points::GRID_INITIAL_X,
+            bottom: points::GRID_INITIAL_Y + level_offset,
             direction: InvaderDirection::default(),
         }
     }
@@ -61,9 +61,9 @@ impl InvaderGrid {
 
         if on_edge {
             self.direction = self.direction.switch();
-            self.origin_y -= points::INVADER_MOVE_Y;
+            self.bottom -= points::INVADER_MOVE_Y;
         } else {
-            self.origin_x += match self.direction {
+            self.left += match self.direction {
                 InvaderDirection::Left => -1.0 * points::INVADER_MOVE_X,
                 InvaderDirection::Right => points::INVADER_MOVE_X,
             };
@@ -105,13 +105,13 @@ impl InvaderGrid {
 
     ///
     pub fn is_visible(&self) -> bool {
-        if self.origin_y > 0.0 {
+        if self.bottom > 0.0 {
             return true;
         }
 
         for row in self.rows.iter() {
             if !row.is_visible() {
-                return false
+                return false;
             }
         }
 
@@ -131,10 +131,10 @@ impl InvaderGrid {
         }
 
         Area::new(
-            self.origin_x,
-            self.origin_y,
-            self.origin_x + row_width,
-            self.origin_y + (5.0 * points::ROW_HEIGHT),
+            self.left,
+            self.bottom,
+            self.left + row_width,
+            self.bottom + (5.0 * points::ROW_HEIGHT),
         )
     }
 
@@ -173,30 +173,30 @@ impl Shape for InvaderGrid {
 #[derive(Clone, Debug, PartialEq)]
 struct InvaderRow {
     invaders: Vec<Option<Invader>>,
-    origin_x: f64,
-    origin_y: f64,
+    left: f64,
+    bottom: f64,
     pub size: usize,
     pub count: usize,
 }
 
 impl InvaderRow {
     ///
-    pub fn new(invader_type: InvaderType, origin_x: f64, origin_y: f64) -> Self {
+    pub fn new(invader_type: InvaderType, left: f64, bottom: f64) -> Self {
         let mut invaders = Vec::new();
 
         for i in 0..INVADERS_PER_ROW {
             let invader = Invader::new(
                 invader_type,
-                origin_x + (points::ALIEN_WIDTH + points::ALIEN_BUFFER_WIDTH) * (i as f64),
-                origin_y,
+                left + (points::ALIEN_WIDTH + points::ALIEN_BUFFER_WIDTH) * (i as f64),
+                bottom,
             );
             invaders.push(Some(invader));
         }
 
         Self {
             invaders,
-            origin_x,
-            origin_y,
+            left,
+            bottom,
             size: INVADERS_PER_ROW,
             count: INVADERS_PER_ROW,
         }
@@ -215,7 +215,7 @@ impl InvaderRow {
 
     ///
     pub fn move_along(&mut self, direction: InvaderDirection, movement: f64) {
-        self.origin_x += match direction {
+        self.left += match direction {
             InvaderDirection::Left => -1.0 * movement,
             InvaderDirection::Right => movement,
         };
@@ -227,7 +227,7 @@ impl InvaderRow {
 
     ///
     pub fn move_down(&mut self, movement: f64) {
-        self.origin_y -= movement;
+        self.bottom -= movement;
 
         for invader in self.invaders.iter_mut().flatten() {
             invader.move_down(movement);
@@ -266,10 +266,10 @@ impl InvaderRow {
     ///
     pub fn area(&self) -> Area {
         Area::new(
-            self.origin_x,
-            self.origin_y,
-            self.origin_x + self.width(),
-            self.origin_y + points::ALIEN_HEIGHT,
+            self.left,
+            self.bottom,
+            self.left + self.width(),
+            self.bottom + points::ALIEN_HEIGHT,
         )
     }
 
@@ -295,7 +295,7 @@ impl InvaderRow {
 
     ///
     pub fn is_visible(&self) -> bool {
-        self.origin_y > 0.0 || self.is_empty()
+        self.bottom > 0.0 || self.is_empty()
     }
 }
 
@@ -311,18 +311,18 @@ impl Shape for InvaderRow {
 struct Invader {
     invader_type: InvaderType,
     animation: InvaderAnimation,
-    origin_x: f64,
-    origin_y: f64,
+    left: f64,
+    bottom: f64,
 }
 
 impl Invader {
     ///
-    pub fn new(invader_type: InvaderType, origin_x: f64, origin_y: f64) -> Self {
+    pub fn new(invader_type: InvaderType, left: f64, bottom: f64) -> Self {
         Self {
             invader_type,
             animation: InvaderAnimation::default(),
-            origin_x,
-            origin_y,
+            left,
+            bottom,
         }
     }
 
@@ -356,14 +356,14 @@ impl Invader {
     ///
     pub fn on_edge(&self, direction: InvaderDirection) -> bool {
         match direction {
-            InvaderDirection::Left => self.origin_x <= points::GRID_INITIAL_X,
-            InvaderDirection::Right => (self.origin_x + points::ALIEN_WIDTH) >= points::GAME_WIDTH,
+            InvaderDirection::Left => self.left <= points::GRID_INITIAL_X,
+            InvaderDirection::Right => (self.left + points::ALIEN_WIDTH) >= points::GAME_WIDTH,
         }
     }
 
     ///
     pub fn move_along(&mut self, direction: InvaderDirection, movement: f64) {
-        self.origin_x += match direction {
+        self.left += match direction {
             InvaderDirection::Left => -1.0 * movement,
             InvaderDirection::Right => movement,
         };
@@ -373,7 +373,7 @@ impl Invader {
 
     ///
     pub fn move_down(&mut self, movement: f64) {
-        self.origin_y -= movement;
+        self.bottom -= movement;
         self.animation = self.animation.switch();
     }
 
@@ -396,10 +396,10 @@ impl Invader {
         let x_offset = self.draw_x_offset();
 
         Area::new(
-            self.origin_x + x_offset,
-            self.origin_y,
-            self.origin_x + x_offset + self.width(),
-            self.origin_y + points::ALIEN_HEIGHT,
+            self.left + x_offset,
+            self.bottom,
+            self.left + x_offset + self.width(),
+            self.bottom + points::ALIEN_HEIGHT,
         )
     }
 
@@ -414,8 +414,8 @@ impl Shape for Invader {
         let color = self.invader_type.color();
 
         for (x, y) in self.data() {
-            let x = x + self.origin_x + x_offset;
-            let y = y + self.origin_y;
+            let x = x + self.left + x_offset;
+            let y = y + self.bottom;
 
             if let Some((x, y)) = painter.get_point(x, y) {
                 painter.paint(x, y, color);

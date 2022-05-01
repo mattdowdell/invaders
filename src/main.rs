@@ -5,9 +5,9 @@ mod assets;
 mod points;
 mod ui;
 
-use std::env;
+// use std::env;
 use std::io;
-use std::path::PathBuf;
+// use std::path::PathBuf;
 use std::time::{Duration, Instant};
 
 use clap::Parser;
@@ -45,12 +45,15 @@ struct Args {
 fn main() -> Result<(), io::Error> {
     let args = Args::parse();
 
-    // setup terminal
     enable_raw_mode()?;
+
     let mut stdout = io::stdout();
     execute!(stdout, EnterAlternateScreen)?;
+
     let backend = CrosstermBackend::new(stdout);
     let mut terminal = Terminal::new(backend)?;
+
+    panic_hook();
 
     let mut app = app::App::new(
         args.mystery_ship_interval,
@@ -102,23 +105,36 @@ fn main() -> Result<(), io::Error> {
         }
     }
 
-    // restore terminal
+    reset_terminal()?;
+
+    Ok(())
+}
+
+fn panic_hook() {
+    let original_hook = std::panic::take_hook();
+
+    std::panic::set_hook(Box::new(move |panic| {
+        reset_terminal().expect("failed to reset terminal");
+        original_hook(panic);
+    }));
+}
+
+fn reset_terminal() -> io::Result<()> {
     disable_raw_mode()?;
-    execute!(terminal.backend_mut(), LeaveAlternateScreen,)?;
-    terminal.show_cursor()?;
+    crossterm::execute!(io::stdout(), LeaveAlternateScreen)?;
 
     Ok(())
 }
 
 //
-fn xdg_cache_home() -> PathBuf {
-    match env::var_os("XDG_CACHE_HOME") {
-        Some(cache_home) => PathBuf::from(cache_home),
-        None => {
-            let mut home_dir = home::home_dir().expect("Unable to get home directory");
-            home_dir.push(".cache");
+// fn xdg_cache_home() -> PathBuf {
+//     match env::var_os("XDG_CACHE_HOME") {
+//         Some(cache_home) => PathBuf::from(cache_home),
+//         None => {
+//             let mut home_dir = home::home_dir().expect("Unable to get home directory");
+//             home_dir.push(".cache");
 
-            home_dir
-        }
-    }
-}
+//             home_dir
+//         }
+//     }
+// }

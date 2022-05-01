@@ -42,18 +42,18 @@ impl Shape for Bunkers {
 ///
 #[derive(Clone, Debug, PartialEq)]
 pub struct Bunker {
-    origin_x: f64,
-    origin_y: f64,
+    left: f64,
+    bottom: f64,
     color: Color,
     data: Vec<(f64, f64)>,
 }
 
 impl Bunker {
     ///
-    pub fn new(origin_x: f64, origin_y: f64) -> Self {
+    pub fn new(left: f64, bottom: f64) -> Self {
         Self {
-            origin_x,
-            origin_y,
+            left,
+            bottom,
             color: Color::Green,
             data: points::BUNKER.into(),
         }
@@ -63,8 +63,8 @@ impl Bunker {
 impl Shape for Bunker {
     fn draw(&self, painter: &mut Painter) {
         for (x, y) in self.data.iter() {
-            let x = x + self.origin_x;
-            let y = y + self.origin_y;
+            let x = x + self.left;
+            let y = y + self.bottom;
 
             if let Some((x, y)) = painter.get_point(x, y) {
                 painter.paint(x, y, self.color);

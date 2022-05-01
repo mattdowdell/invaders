@@ -38,6 +38,7 @@
         - TODO: add support for bidirectional lasers.
     - Up to 3 alien lasers may exist at a time.
     - Store hiscores in `${XDG_CACHE_HOME}/invaders/hiscores.toml` and load on start.
+        - Commented-out helper function in `main.rs`
 - Handle `Ctrl+Z` (`SIGSTOP`/`SIGCONT`).
     - Probably worth handling `SIGINT` properly as well.
 
