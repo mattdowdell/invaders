@@ -111,7 +111,7 @@ fn draw_game<B: Backend>(f: &mut Frame<B>, area: Rect, app: &App) {
             ctx.draw(&app.grid);
             ctx.draw(&app.mystery_ship);
 
-            for laser in app.lasers.iter() {
+            for laser in app.cannon_lasers.iter().chain(app.invader_lasers.iter()) {
                 ctx.draw(laser);
             }
         });

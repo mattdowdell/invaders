@@ -58,6 +58,7 @@ fn main() -> Result<(), io::Error> {
     let mut app = app::App::new(
         args.mystery_ship_interval,
         args.max_cannon_lasers,
+        args.max_invader_lasers,
         args.start_level,
     );
     let tick_rate = Duration::from_millis(args.tick_length);

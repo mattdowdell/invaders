@@ -1,5 +1,6 @@
 //!
 
+use rand::distributions::{Distribution, Uniform};
 use tui::style::Color;
 use tui::widgets::canvas::{Painter, Shape};
 
@@ -16,6 +17,7 @@ pub struct InvaderGrid {
     left: f64,
     bottom: f64,
     direction: InvaderDirection,
+    between: Uniform<usize>,
 }
 
 impl InvaderGrid {
@@ -45,6 +47,7 @@ impl InvaderGrid {
             left: points::GRID_INITIAL_X,
             bottom: points::GRID_INITIAL_Y + level_offset,
             direction: InvaderDirection::default(),
+            between: Uniform::from(0..INVADERS_PER_ROW),
         }
     }
 
@@ -158,6 +161,34 @@ impl InvaderGrid {
         }
 
         true
+    }
+
+    ///
+    pub fn laser(&self) -> Laser {
+        if self.is_empty() {
+            panic!("cannot create laser from empty grid");
+        }
+
+        let mut rng = rand::thread_rng();
+        let mut column = self.between.sample(&mut rng);
+
+        loop {
+            for row in self.rows.iter() {
+                if row.is_empty() {
+                    continue;
+                }
+
+                if let Some(invader) = row.get(column) {
+                    return Laser::new_invader(invader.left, invader.bottom, invader.invader_type);
+                }
+            }
+
+            if column < INVADERS_PER_ROW {
+                column += 1;
+            } else {
+                column = 0;
+            }
+        }
     }
 }
 
@@ -296,6 +327,11 @@ impl InvaderRow {
     ///
     pub fn is_visible(&self) -> bool {
         self.bottom > 0.0 || self.is_empty()
+    }
+
+    ///
+    pub fn get(&self, index: usize) -> &Option<Invader> {
+        self.invaders.get(index).unwrap()
     }
 }
 

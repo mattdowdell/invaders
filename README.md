@@ -55,8 +55,6 @@ builds respectively.
 
 - Gameplay
     - Lasers should erase bunkers when coming into contact with them.
-    - Aliens should be able to fire lasers.
-    - Up to 3 alien lasers may exist at a time.
     - Store hiscores in `${XDG_CACHE_HOME}/invaders/hiscores.toml` and load on start.
         - Commented-out helper function in `main.rs`
 - Handle `Ctrl+Z` (`SIGSTOP`/`SIGCONT`).

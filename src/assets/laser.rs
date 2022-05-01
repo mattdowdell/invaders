@@ -14,7 +14,6 @@ pub struct Laser {
     bottom: f64,
     color: Color,
     direction: Direction,
-    pub from: LaserFrom,
 }
 
 impl Laser {
@@ -25,7 +24,6 @@ impl Laser {
             bottom: points::CANNON_LASER_INITIAL_Y,
             color: Color::Green,
             direction: Direction::Up,
-            from: LaserFrom::Cannon,
         }
     }
 
@@ -36,7 +34,6 @@ impl Laser {
             bottom: invader_bottom - points::LASER_HEIGHT,
             color: invader_type.color(),
             direction: Direction::Down,
-            from: LaserFrom::Invader,
         }
     }
 
@@ -82,11 +79,4 @@ impl Shape for Laser {
 enum Direction {
     Up,
     Down,
-}
-
-///
-#[derive(Clone, Copy, Debug, PartialEq)]
-pub enum LaserFrom {
-    Invader,
-    Cannon,
 }
