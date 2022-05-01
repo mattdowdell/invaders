@@ -4,7 +4,7 @@ use rand::rngs::ThreadRng;
 
 use crate::assets::{Bunkers, Cannon, InvaderGrid, Laser, MysteryShip};
 
-const INVADER_LASER_COUNTER_DEFAULT: u8 = 8;
+const INVADER_LASER_COUNTER_DEFAULT: u8 = 16;
 const ALIEN_COUNTER_DEFAULT: u8 = 5;
 const DEFAULT_LIVES: u8 = 3;
 const MAX_LEVEL: u8 = 6;
@@ -244,6 +244,10 @@ impl App {
         // and we delete the wrong one (or panic if there's none left)
         for i in invader_lasers_to_delete.into_iter().rev() {
             self.invader_lasers.remove(i);
+        }
+
+        for invader in self.grid.collides_with_bunkers(&self.bunkers).into_iter() {
+            self.bunkers.collides_with_invader(invader);
         }
     }
 

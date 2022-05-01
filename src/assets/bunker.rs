@@ -5,7 +5,7 @@ use tui::widgets::canvas::{Painter, Shape};
 
 use crate::points;
 
-use super::{Area, Laser};
+use super::{Area, Invader, Laser};
 
 const BUNKER_SPACING: f64 =
     (points::GAME_WIDTH - (2.0 * points::BUNKER_OFFSET_X) - (4.0 * points::BUNKER_WIDTH)) / 3.0;
@@ -45,8 +45,17 @@ impl Bunkers {
         false
     }
 
+    ///
+    pub fn collides_with_invader(&mut self, invader: &Invader) {
+        for bunker in self.bunkers.iter_mut() {
+            if bunker.collides_with_invader(invader) {
+                break;
+            }
+        }
+    }
+
     //
-    fn area(&self) -> Area {
+    pub fn area(&self) -> Area {
         Area::new(
             0.0,
             points::BUNKER_INITIAL_Y,
@@ -96,6 +105,31 @@ impl Bunker {
                 let y = y + self.bottom;
 
                 if collision_area.contains(x, y) {
+                    to_delete.push(i);
+                    collision = true;
+                }
+            }
+        }
+
+        for i in to_delete.into_iter().rev() {
+            self.data.remove(i);
+        }
+
+        collision
+    }
+
+    ///
+    pub fn collides_with_invader(&mut self, invader: &Invader) -> bool {
+        let mut collision = false;
+        let mut to_delete = vec![];
+        let invader_area = invader.area();
+
+        if self.area().overlaps(invader_area) {
+            for (i, (x, y)) in self.data.iter().enumerate() {
+                let x = x + self.left;
+                let y = y + self.bottom;
+
+                if invader_area.contains(x, y) {
                     to_delete.push(i);
                     collision = true;
                 }

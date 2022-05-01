@@ -9,7 +9,7 @@ use tui::widgets::canvas::{Painter, Shape};
 
 use crate::points;
 
-use super::{Area, Cannon, Laser};
+use super::{Area, Bunkers, Cannon, Laser};
 
 const INVADERS_PER_ROW: usize = 8;
 
@@ -107,6 +107,19 @@ impl InvaderGrid {
         }
 
         false
+    }
+
+    ///
+    pub fn collides_with_bunkers(&self, bunkers: &Bunkers) -> Vec<&Invader> {
+        let mut invaders = vec![];
+
+        if self.area().overlaps(bunkers.area()) {
+            for row in self.rows.iter() {
+                invaders.append(&mut row.collides_with_bunkers(bunkers));
+            }
+        }
+
+        invaders
     }
 
     ///
@@ -295,6 +308,20 @@ impl InvaderRow {
     }
 
     ///
+    pub fn collides_with_bunkers(&self, bunkers: &Bunkers) -> Vec<&Invader> {
+        let bunkers_area = bunkers.area();
+        let mut invaders = vec![];
+
+        for invader in self.invaders.iter().flatten() {
+            if bunkers_area.overlaps(invader.area()) {
+                invaders.push(invader);
+            }
+        }
+
+        invaders
+    }
+
+    ///
     pub fn area(&self) -> Area {
         Area::new(
             self.left,
@@ -344,7 +371,7 @@ impl Shape for InvaderRow {
 }
 
 #[derive(Clone, Copy, Debug, PartialEq)]
-struct Invader {
+pub struct Invader {
     invader_type: InvaderType,
     animation: InvaderAnimation,
     left: f64,
