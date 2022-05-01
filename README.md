@@ -1,60 +1,39 @@
 # invaders
 
-## UI Design
+A Space Invaders TUI in Rust, built using [`tui`](https://crates.io/crates/tui) and
+[`crossterm`](https://crates.io/crates/crossterm).
 
+## Demo
 
-```
-+-Space Invaders---------------------------------------------------------------+
-| [H]elp | [P]ause | [Q]uit                                                    |
-+-Score--------------------------------+-Hiscore-------------------------------+
-| 100                                  | 1000                                  |
-+--------------------------------------+---------------------------------------+
-|        =O=                                                                   |
-|                                                                              |
-|                     AA AA AA AA AA AA AA AA AA AA AA AA                      |
-|                     BB BB BB BB BB BB BB BB BB BB BB BB                      |
-|                     BB BB BB BB BB BB BB BB BB BB BB BB                      |
-|                     CC CC CC CC CC CC CC CC CC CC CC CC                      |
-|                     CC CC CC CC CC CC CC CC CC CC CC CC                      |
-|                                                                              |
-|                                                                              |
-|                                                                              |
-|                                                                              |
-|      ####                  ####                  ####                ####    |
-|     ######                ######                ######              ######   |
-|     ######                ######                ######              ######   |
-|                                                                              |
-|                                              =M=                             |
-+------------------------------------------------------------------------------+
-| Lives: =M= =M= =M=                                                           |
-+------------------------------------------------------------------------------+
+*To do: Add demo GIF.*
+
+## Usage
+
+To run the game:
+
+```sh
+# using pre-compiled binary
+./invaders
+
+# with source code
+cargo run
 ```
 
-## Tasks
+Some settings are available to tune gameplay:
 
-- Gameplay
-    - Lasers should erode bunkers.
-    - Aliens should be able to fire lasers.
-        - TODO: add support for bidirectional lasers.
-    - Up to 3 alien lasers may exist at a time.
-    - Store hiscores in `${XDG_CACHE_HOME}/invaders/hiscores.toml` and load on start.
-        - Commented-out helper function in `main.rs`
-- Handle `Ctrl+Z` (`SIGSTOP`/`SIGCONT`).
-    - Probably worth handling `SIGINT` properly as well.
-
-## Research
-
-https://www.classicgaming.cc/classics/space-invaders/play-guide
-
-> The more invaders the player shoots, the faster the remaining invaders move. When the invaders are low enough to touch the base shelters they erase them as they pass. The last invader moves very quickly, but slightly faster left to right than right to left.
-
-https://spaceinvaders.fandom.com/wiki/UFO
-
-> If a player hits [the mystery ship], they will receive a random number of either 50, 100, 150, or 200 points. However, if they perform the secret of firing 22 shots, then hitting it on the 23rd shot, then on the 15th shot thereafter, they will receive 300 points every time.
+- `-h, --help`: Print help information
+- `--max-cannon-lasers <MAX_CANNON_LASERS>`: The maximum number of cannon lasers that can be present
+  (default: 1).
+- `--max-invader-lasers <MAX_INVADER_LASERS>`: The maximum number of invader lasers that can be
+  present (default: 3).
+- `--mystery-ship-interval <MYSTERY_SHIP_INTERVAL>`: The interval in ticks between appearances of
+  the mystery ship (default: 200).
+- `--start-level <START_LEVEL>`: The level to start at (default: 0).
+- `--tick-length <TICK_LENGTH>`: The number of milliseconds per tick (default: 50)
 
 ## Build
 
-*Developed using Rust 1.60, but should be compatible with Rust 1.56 and later.*
+*Developed using Rust 1.60, but should be compatible with Rust 1.56 (Edition 2021) and later.*
 
 Using [`cargo`](https://doc.rust-lang.org/cargo/getting-started/installation.html):
 
@@ -71,3 +50,16 @@ cargo build --release
 
 Build artefacts will be `target/debug/invaders` or `target/release/invaders` for debug and release
 builds respectively.
+
+## Tasks
+
+- Gameplay
+    - Lasers should erase bunkers when coming into contact with them.
+    - Aliens should be able to fire lasers.
+    - Up to 3 alien lasers may exist at a time.
+    - Store hiscores in `${XDG_CACHE_HOME}/invaders/hiscores.toml` and load on start.
+        - Commented-out helper function in `main.rs`
+- Handle `Ctrl+Z` (`SIGSTOP`/`SIGCONT`).
+    - Probably worth handling `SIGINT` properly as well.
+- Add check on terminal size before attempting to render to avoid panics
+    - Pause game if terminal is resized too small during gameplay.
