@@ -1,8 +1,8 @@
 //!
 
 use rand::{
-    Rng,
     distributions::{Distribution, Uniform},
+    Rng,
 };
 use tui::style::Color;
 use tui::widgets::canvas::{Painter, Shape};
@@ -169,7 +169,7 @@ impl InvaderGrid {
     ///
     pub fn laser<R: Rng + Sized>(&self, rng: &mut R) -> Option<Laser> {
         if self.is_empty() {
-            return None
+            return None;
         }
 
         let column = self.between.sample(rng);
@@ -180,7 +180,11 @@ impl InvaderGrid {
             }
 
             if let Some(invader) = row.get(column) {
-                return Some(Laser::new_invader(invader.left, invader.bottom, invader.invader_type));
+                return Some(Laser::new_invader(
+                    invader.left,
+                    invader.bottom,
+                    invader.invader_type,
+                ));
             }
         }
 

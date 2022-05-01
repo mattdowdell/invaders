@@ -206,6 +206,10 @@ impl App {
                 self.mystery_ship.hide();
                 cannon_lasers_to_delete.push(i);
             }
+
+            if self.bunkers.collides_with_laser(laser) {
+                cannon_lasers_to_delete.push(i);
+            }
         }
 
         // go through in reverse order so we can delete multiple elements in one pass
@@ -227,6 +231,10 @@ impl App {
                 self.lives -= 1;
 
                 self.cannon.reset();
+                invader_lasers_to_delete.push(i);
+            }
+
+            if self.bunkers.collides_with_laser(laser) {
                 invader_lasers_to_delete.push(i);
             }
         }

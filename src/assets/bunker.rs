@@ -5,6 +5,8 @@ use tui::widgets::canvas::{Painter, Shape};
 
 use crate::points;
 
+use super::{Area, Laser};
+
 const BUNKER_SPACING: f64 =
     (points::GAME_WIDTH - (2.0 * points::BUNKER_OFFSET_X) - (4.0 * points::BUNKER_WIDTH)) / 3.0;
 
@@ -28,6 +30,29 @@ impl Bunkers {
         }
 
         Self { bunkers }
+    }
+
+    ///
+    pub fn collides_with_laser(&mut self, laser: &Laser) -> bool {
+        if self.area().overlaps(laser.area()) {
+            for bunker in self.bunkers.iter_mut() {
+                if bunker.collides_with_laser(laser) {
+                    return true;
+                }
+            }
+        }
+
+        false
+    }
+
+    //
+    fn area(&self) -> Area {
+        Area::new(
+            0.0,
+            points::BUNKER_INITIAL_Y,
+            points::GAME_WIDTH,
+            points::BUNKER_INITIAL_Y + points::BUNKER_HEIGHT,
+        )
     }
 }
 
@@ -57,6 +82,25 @@ impl Bunker {
             color: Color::Green,
             data: points::BUNKER.into(),
         }
+    }
+
+    ///
+    pub fn collides_with_laser(&mut self, laser: &Laser) -> bool {
+        if self.area().overlaps(laser.area()) {
+            return true;
+        }
+
+        false
+    }
+
+    //
+    fn area(&self) -> Area {
+        Area::new(
+            self.left,
+            self.bottom,
+            self.left + points::BUNKER_WIDTH,
+            self.bottom + points::BUNKER_HEIGHT,
+        )
     }
 }
 

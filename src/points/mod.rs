@@ -18,6 +18,7 @@ pub const CANNON_WIDTH: f64 = 15.0;
 pub const CANNON_HEIGHT: f64 = 8.0;
 
 pub const BUNKER_WIDTH: f64 = 20.0;
+pub const BUNKER_HEIGHT: f64 = 16.0;
 
 pub const CRAB_WIDTH: f64 = 11.0;
 pub const SQUID_WIDTH: f64 = 8.0;
