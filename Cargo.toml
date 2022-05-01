@@ -1,7 +1,13 @@
 [package]
 name = "invaders"
+description = "A Space Invaders game TUI"
 version = "0.1.0"
 edition = "2021"
+rust-version = "1.56"
+repository = "https://github.com/mattdowdell/invaders"
+license = "MIT"
+categories = ["command-line-utilities", "games"]
+keywords = ["games", "tui", "space invaders"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

@@ -183,7 +183,7 @@ impl App {
                         self.lives -= 1;
 
                         if self.lives == 0 {
-                            self.game_over;
+                            self.game_over = true;
                             return;
                         }
 
