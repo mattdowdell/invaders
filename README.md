@@ -51,6 +51,21 @@ cargo build --release
 Build artefacts will be `target/debug/invaders` or `target/release/invaders` for debug and release
 builds respectively.
 
+### Releases
+
+MacOS (on MacOS):
+
+```sh
+cargo build --release --target x86_64-apple-darwin
+tar -C ./target/x86_64-apple-darwin/release/ -cvzf invaders-x86_64-apple-darwin.tar.gz invaders
+```
+
+Linux (using Docker):
+
+```
+# TODO
+```
+
 ## Tasks
 
 - Gameplay
@@ -67,3 +82,4 @@ builds respectively.
     - Probably worth handling `SIGINT` properly as well.
 - Add check on terminal size before attempting to render to avoid panics
     - Pause game if terminal is resized too small during gameplay.
+- Add dockerfile for Linux binaries
