@@ -20,6 +20,7 @@ use tui::{backend::CrosstermBackend, Terminal};
 
 ///
 #[derive(Parser, Debug)]
+#[clap(version)]
 struct Args {
     /// The interval in ticks between appearances of the mystery ship.
     #[clap(long, default_value_t = 200)]

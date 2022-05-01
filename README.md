@@ -64,21 +64,3 @@ make build-docker
 # clean release artifacts
 make clean
 ```
-
-## Tasks
-
-- Gameplay
-    - Invaders should erase bunkers when coming into contact with them.
-    - Add support for hiscores.
-        - Store hiscores in `${XDG_CACHE_HOME}/invaders/hiscores.toml`
-            - Commented-out helper function in `main.rs`.
-        - Game over should check if the score is in the top 5.
-        - If score is in top 5, write new hiscores to file.
-            - Bonus: Accept name of player for hiscore.
-        - Hiscores should be loaded on start, added to the start screen, game screen, and game over screen.
-    - Make mystership appearances less frequent by default.
-- Handle `Ctrl+Z` (`SIGSTOP`/`SIGCONT`).
-    - Probably worth handling `SIGINT` properly as well.
-- Add check on terminal size before attempting to render to avoid panics
-    - Pause game if terminal is resized too small during gameplay.
-- Add dockerfile for Linux binaries
