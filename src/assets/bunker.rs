@@ -86,11 +86,27 @@ impl Bunker {
 
     ///
     pub fn collides_with_laser(&mut self, laser: &Laser) -> bool {
+        let mut collision = false;
+        let mut to_delete = vec![];
+        let collision_area = laser.bunker_collision_area();
+
         if self.area().overlaps(laser.area()) {
-            return true;
+            for (i, (x, y)) in self.data.iter().enumerate() {
+                let x = x + self.left;
+                let y = y + self.bottom;
+
+                if collision_area.contains(x, y) {
+                    to_delete.push(i);
+                    collision = true;
+                }
+            }
         }
 
-        false
+        for i in to_delete.into_iter().rev() {
+            self.data.remove(i);
+        }
+
+        collision
     }
 
     //

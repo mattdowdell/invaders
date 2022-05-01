@@ -28,6 +28,11 @@ impl Area {
             && self.top > other.bottom
             && self.bottom < other.top
     }
+
+    ///
+    pub fn contains(&self, x: f64, y: f64) -> bool {
+        x >= self.left && y >= self.bottom && x < self.right && y < self.top
+    }
 }
 
 impl From<((f64, f64), (f64, f64))> for Area {
@@ -129,6 +134,39 @@ mod test {
                 area_b,
                 area_a
             );
+        }
+    }
+
+    #[test]
+    fn test_area_contains() {
+        let area = Area::new(0.0, 0.0, 2.0, 2.0);
+        let points = vec![(0.0, 0.0), (1.0, 0.0), (0.0, 1.0), (1.0, 1.0)];
+
+        for (x, y) in points.into_iter() {
+            assert!(area.contains(x, y), "({}, {}) is not in {:?}", x, y, area);
+        }
+    }
+
+    #[test]
+    fn test_area_not_contains() {
+        let area = Area::new(0.0, 0.0, 2.0, 2.0);
+        let points = vec![
+            (-1.0, -1.0),
+            (0.0, -1.0),
+            (1.0, -1.0),
+            (2.0, -1.0),
+            (-1.0, 0.0),
+            (2.0, 0.0),
+            (-1.0, 1.0),
+            (2.0, 1.0),
+            (-1.0, 2.0),
+            (0.0, 2.0),
+            (1.0, 2.0),
+            (2.0, 2.0),
+        ];
+
+        for (x, y) in points.into_iter() {
+            assert!(!area.contains(x, y), "({}, {}) is in {:?}", x, y, area);
         }
     }
 }

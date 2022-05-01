@@ -59,6 +59,16 @@ impl Laser {
             self.bottom + points::LASER_HEIGHT,
         )
     }
+
+    ///
+    pub fn bunker_collision_area(&self) -> Area {
+        Area::new(
+            self.left - 1.0,
+            self.bottom,
+            self.left + points::LASER_WIDTH + 1.0,
+            self.bottom + points::LASER_HEIGHT,
+        )
+    }
 }
 
 impl Shape for Laser {
