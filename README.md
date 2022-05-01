@@ -64,3 +64,9 @@ make build-docker
 # clean release artifacts
 make clean
 ```
+
+The `sha256sum` utility can be used to generate checksums of the release build files:
+
+```sh
+sha256sum invaders-*.tar.gz > sha256sum.txt
+````
