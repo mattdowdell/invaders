@@ -18,12 +18,12 @@ use crossterm::{
 };
 use tui::{backend::CrosstermBackend, Terminal};
 
-/// Space Invaders game in a terminal
+/// A Space Invaders game in a terminal
 #[derive(Parser, Debug)]
 #[clap(version)]
 struct Args {
     /// The interval in ticks between appearances of the mystery ship.
-    #[clap(long, default_value_t = 200)]
+    #[clap(long, default_value_t = 2000)]
     mystery_ship_interval: u16,
 
     /// The maximum number of cannon lasers that can be present.
