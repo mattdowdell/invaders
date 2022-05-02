@@ -37,7 +37,7 @@ Some settings are available to tune gameplay:
 - `--max-invader-lasers <MAX_INVADER_LASERS>`: The maximum number of invader lasers that can be
   present (default: 3).
 - `--mystery-ship-interval <MYSTERY_SHIP_INTERVAL>`: The interval in ticks between appearances of
-  the mystery ship (default: 200).
+  the mystery ship (default: 2000).
 - `--start-level <START_LEVEL>`: The level to start at (default: 0).
 - `--tick-length <TICK_LENGTH>`: The number of milliseconds per tick (default: 50)
 
