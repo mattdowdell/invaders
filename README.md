@@ -15,6 +15,8 @@ To install, use [`cargo`](https://doc.rust-lang.org/cargo/getting-started/instal
 cargo install --git https://github.com/mattdowdell/invaders --tag v0.0.1
 ```
 
+See [here](https://github.com/mattdowdell/invaders/tags) for a full list of tags.
+
 ## Usage
 
 To run the game:
