@@ -5,7 +5,8 @@ use tui::layout::Rect;
 use tui::terminal::Frame;
 use tui::{
     layout::{Constraint, Direction, Layout},
-    widgets::{Clear, Widget},
+    text::Span,
+    widgets::{Clear, Paragraph, Widget},
 };
 
 ///
@@ -69,5 +70,16 @@ pub fn draw_popup<B: Backend, W: Widget>(
     let area = chunks[index];
 
     f.render_widget(Clear, area);
+    f.render_widget(widget, area);
+}
+
+pub fn draw_too_small_message<B: Backend>(f: &mut Frame<B>, area: Rect) {
+    let widget = Paragraph::new(Span::raw(format!(
+        "Terminal must be at least {}x{} characters, currently {}x{} characters",
+        super::APP_WIDTH,
+        super::APP_HEIGHT,
+        area.width,
+        area.height,
+    )));
     f.render_widget(widget, area);
 }

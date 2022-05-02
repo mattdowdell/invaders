@@ -36,7 +36,12 @@ const PAUSE_HEIGHT: u16 = 1 + (2 * BORDER_WIDTH);
 
 ///
 pub fn draw<B: Backend>(f: &mut Frame<B>, app: &App) {
-    // TODO: output help message if size is insufficient, otherwise we panic
+    let size = f.size();
+
+    if size.width < APP_WIDTH || size.height < APP_HEIGHT {
+        util::draw_too_small_message(f, size);
+        return;
+    }
 
     if !app.started {
         start::draw_start_screen(f);
