@@ -7,13 +7,21 @@ A Space Invaders TUI in Rust, built using [`tui`](https://crates.io/crates/tui) 
 
 *To do: Add demo GIF.*
 
+## Install
+
+To install, use [`cargo`](https://doc.rust-lang.org/cargo/getting-started/installation.html):
+
+```sh
+cargo install --git https://github.com/mattdowdell/invaders --tag v0.0.1
+```
+
 ## Usage
 
 To run the game:
 
 ```sh
-# using pre-compiled binary
-./invaders
+# using build from `cargo install`
+invaders
 
 # with source code
 cargo run
@@ -41,32 +49,12 @@ Using [`cargo`](https://doc.rust-lang.org/cargo/getting-started/installation.htm
 # run locally
 cargo run
 
-# debug build
+# create debug build
 cargo build
 
-# release build
+# create release build (binary is smaller and runs faster)
 cargo build --release
 ```
 
 Build artefacts will be `target/debug/invaders` or `target/release/invaders` for debug and release
 builds respectively.
-
-Release builds can be created using `make` and output `invaders-<target>.tar.gz` in the root of the
-repository, where `target` is the architecture and OS being built upon:
-
-```sh
-# local build
-make build
-
-# linux build (using docker)
-make build-docker
-
-# clean release artifacts
-make clean
-```
-
-The `sha256sum` utility can be used to generate checksums of the release build files:
-
-```sh
-sha256sum invaders-*.tar.gz > sha256sum.txt
-````
