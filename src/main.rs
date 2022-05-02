@@ -18,7 +18,7 @@ use crossterm::{
 };
 use tui::{backend::CrosstermBackend, Terminal};
 
-///
+/// Space Invaders game in a terminal
 #[derive(Parser, Debug)]
 #[clap(version)]
 struct Args {
