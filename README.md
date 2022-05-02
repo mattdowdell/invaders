@@ -5,7 +5,7 @@ A Space Invaders TUI in Rust, built using [`tui`](https://crates.io/crates/tui) 
 
 ## Demo
 
-![Invaders demo](https://user-images.githubusercontent.com/20556265/166218629-518bca8d-f492-4357-a1e4-f8e9d6b58069.mov)
+https://user-images.githubusercontent.com/20556265/166218629-518bca8d-f492-4357-a1e4-f8e9d6b58069.mov
 
 ## Install
 
