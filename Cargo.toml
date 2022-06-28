@@ -11,7 +11,7 @@ keywords = ["games", "tui", "space invaders"]
 
 [dependencies]
 clap = { version = "3.2.6", features = ["derive"] }
-crossterm = "0.22"
+crossterm = "0.23"
 home = "0.5.3"
 rand = "0.8.5"
 tui = "0.18.0"
