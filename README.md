@@ -1,5 +1,8 @@
 # invaders
 
+![GitHub tag (latest by date)](https://img.shields.io/github/v/tag/mattdowdell/invaders?label=version&style=for-the-badge)
+![GitHub Workflow Status](https://img.shields.io/github/workflow/status/mattdowdell/invaders/Pull%20Request%20Checks?style=for-the-badge)
+
 A Space Invaders TUI in Rust, built using [`tui`](https://crates.io/crates/tui) and
 [`crossterm`](https://crates.io/crates/crossterm).
 
