@@ -1,11 +1,15 @@
 name: release
-on: workflow_dispatch
+on:
+  release:
+    [published] # TODO: use released for actual releases
 
 jobs:
   publish:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ release.tag }}
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
@@ -14,6 +18,6 @@ jobs:
         with:
           registry-token: ${{ secrets.CARGO_REGISTRY_TOKEN }}
           dry-run: true
-          ignore-unpublished-changes: true
+          # ignore-unpublished-changes: true
 
   # build binaries and add to gh release (https://github.com/marketplace/actions/rust-release-binary)
