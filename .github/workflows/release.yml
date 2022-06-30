@@ -1,7 +1,9 @@
 name: release
 on:
   release:
-    [published] # TODO: use released for actual releases
+    types:
+      # - released # TODO: use released for actual releases
+      - published
 
 jobs:
   publish:
