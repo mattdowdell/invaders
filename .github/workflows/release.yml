@@ -2,8 +2,8 @@ name: release
 on:
   release:
     types:
-      # - released # TODO: use released for actual releases
-      - unpublished
+      - released
+      - edited # TODO: remove this once working.
 
 jobs:
   publish:
