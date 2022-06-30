@@ -1,7 +1,8 @@
 # invaders
 
 ![GitHub tag (latest by date)](https://img.shields.io/github/v/tag/mattdowdell/invaders?label=version&style=for-the-badge)
-![GitHub Workflow Status](https://img.shields.io/github/workflow/status/mattdowdell/invaders/Pull%20Request%20Checks?style=for-the-badge)
+![Minimum Supported Rust Version](https://img.shields.io/badge/MSRV-V1.56.1-blue?style=for-the-badge)
+![GitHub Workflow Status](https://img.shields.io/github/workflow/status/mattdowdell/invaders/continuous-integration?style=for-the-badge)
 
 A Space Invaders TUI in Rust, built using [`tui`](https://crates.io/crates/tui) and
 [`crossterm`](https://crates.io/crates/crossterm).
@@ -43,23 +44,3 @@ Some settings are available to tune gameplay:
   the mystery ship (default: 2000).
 - `--start-level <START_LEVEL>`: The level to start at (default: 0).
 - `--tick-length <TICK_LENGTH>`: The number of milliseconds per tick (default: 50)
-
-## Build
-
-*Developed using Rust 1.60, but should be compatible with Rust 1.56 (Edition 2021) and later.*
-
-Using [`cargo`](https://doc.rust-lang.org/cargo/getting-started/installation.html):
-
-```sh
-# run locally
-cargo run
-
-# create debug build
-cargo build
-
-# create release build (binary is smaller and runs faster)
-cargo build --release
-```
-
-Build artefacts will be `target/debug/invaders` or `target/release/invaders` for debug and release
-builds respectively.
