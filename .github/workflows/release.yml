@@ -1,25 +1,35 @@
 name: release
-on:
-  release:
-    types:
-      - released
-      - edited # TODO: remove this once working.
+on: workflow_dispatch
 
 jobs:
-  publish:
-    runs-on: ubuntu-latest
+  build:
+    name: Build
+    strategy:
+      matrix:
+        os:
+          #- macos-11
+          - ubuntu-20.04
+          #- windows-2019
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v3
-        with:
-          ref: ${{ release.tag }}
       - uses: actions-rs/toolchain@v1
         with:
+          profile: minimal
           toolchain: stable
           override: true
-      - uses: katyo/publish-crates@v1
+      - uses: actions-rs/cargo@v1
         with:
-          registry-token: ${{ secrets.CARGO_REGISTRY_TOKEN }}
-          dry-run: true
-          # ignore-unpublished-changes: true
-
-  # build binaries and add to gh release (https://github.com/marketplace/actions/rust-release-binary)
+          command: build --release
+      - run: cargo install cargo-get
+      - run: git tag -a $(cargo get version --pretty) -m "Version $(cargo get version)"
+      
+      # debugging
+      - run: ls -alph
+      - run: git tag --list -n1
+      - run: git remote -v
+      
+      - run: git push origin $(cargo get version --pretty) --dry-run
+      
+      # TODO: create draft release
+      # TODO: add compressed binaries to release
