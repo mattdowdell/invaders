@@ -20,7 +20,10 @@ jobs:
           override: true
       - uses: actions-rs/cargo@v1
         with:
-          command: build --release
+          command: build
+          args: --release
+      
+      # TODO: move to separate job but archive artifacts
       - run: cargo install cargo-get
       - run: git tag -a $(cargo get version --pretty) -m "Version $(cargo get version)"
       
