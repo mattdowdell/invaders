@@ -487,7 +487,7 @@ impl Shape for Invader {
     }
 }
 
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum InvaderType {
     Crab,
     Squid,
@@ -515,7 +515,7 @@ impl InvaderType {
 }
 
 ///
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum InvaderAnimation {
     Original,
     Alternate,
@@ -540,7 +540,7 @@ impl Default for InvaderAnimation {
 }
 
 ///
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum InvaderDirection {
     Left,
     Right,
