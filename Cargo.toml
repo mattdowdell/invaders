@@ -1,9 +1,9 @@
 [package]
 name = "invaders"
 description = "A Space Invaders game TUI"
-version = "0.0.1"
+version = "0.0.2"
 edition = "2021"
-rust-version = "1.56.1"
+rust-version = "1.60.0"
 repository = "https://github.com/mattdowdell/invaders"
 license = "MIT"
 categories = ["command-line-utilities", "games"]
