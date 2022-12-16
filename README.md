@@ -2,7 +2,7 @@
 
 ![GitHub tag (latest by date)](https://img.shields.io/github/v/tag/mattdowdell/invaders?label=version&style=for-the-badge)
 ![Minimum Supported Rust Version](https://img.shields.io/badge/MSRV-V1.60.0-blue?style=for-the-badge)
-![GitHub Workflow Status](https://img.shields.io/github/workflow/status/mattdowdell/invaders/continuous-integration?style=for-the-badge)
+![GitHub Workflow Status](https://img.shields.io/github/workflow/status/mattdowdell/invaders/continuous-integration.yml?style=for-the-badge)
 
 A Space Invaders TUI in Rust, built using [`tui`](https://crates.io/crates/tui) and
 [`crossterm`](https://crates.io/crates/crossterm).
