@@ -1,7 +1,7 @@
 [package]
 name = "invaders"
 description = "A Space Invaders game TUI"
-version = "0.0.2"
+version = "0.0.3"
 edition = "2021"
 rust-version = "1.64.0"
 repository = "https://github.com/mattdowdell/invaders"
