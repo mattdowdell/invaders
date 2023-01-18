@@ -16,7 +16,7 @@ https://user-images.githubusercontent.com/20556265/166218629-518bca8d-f492-4357-
 To install, use [`cargo`](https://doc.rust-lang.org/cargo/getting-started/installation.html):
 
 ```sh
-cargo install --git https://github.com/mattdowdell/invaders --tag v0.0.2
+cargo install --git https://github.com/mattdowdell/invaders --tag v0.0.3
 ```
 
 See [here](https://github.com/mattdowdell/invaders/tags) for a full list of tags.
