@@ -3,14 +3,14 @@ name = "invaders"
 description = "A Space Invaders game TUI"
 version = "0.0.2"
 edition = "2021"
-rust-version = "1.60.0"
+rust-version = "1.64.0"
 repository = "https://github.com/mattdowdell/invaders"
 license = "MIT"
 categories = ["command-line-utilities", "games"]
 keywords = ["games", "tui", "space invaders"]
 
 [dependencies]
-clap = { version = "4.0.32", features = ["derive"] }
+clap = { version = "4.1.1", features = ["derive"] }
 crossterm = "0.25"
 home = "0.5.4"
 rand = "0.8.5"
