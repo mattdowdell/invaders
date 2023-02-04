@@ -60,8 +60,7 @@ impl MysteryShip {
                 4..=5 | 10..=11 => Some(150),
                 6..=9 => Some(200),
                 _ => panic!(
-                    "Unexpected mystery ship offset: {} ({}, {})",
-                    offset, laser_left, mystery_ship_left
+                    "Unexpected mystery ship offset: {offset} ({laser_left}, {mystery_ship_left})"
                 ),
             }
         } else {
