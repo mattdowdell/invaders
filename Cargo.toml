@@ -10,7 +10,7 @@ categories = ["command-line-utilities", "games"]
 keywords = ["games", "tui", "space invaders"]
 
 [dependencies]
-clap = { version = "4.3.10", features = ["derive"] }
+clap = { version = "4.3.11", features = ["derive"] }
 crossterm = "0.26"
 home = "0.5.5"
 rand = "0.8.5"
